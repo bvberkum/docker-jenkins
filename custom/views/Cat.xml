@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<org.jenkinsci.plugins.categorizedview.CategorizedJobsView plugin="categorized-view@1.8">
+  <name>Cat</name>
+  <filterExecutors>false</filterExecutors>
+  <filterQueue>false</filterQueue>
+  <properties class="hudson.model.View$PropertyList"/>
+  <jobNames>
+    <comparator class="hudson.util.CaseInsensitiveComparator"/>
+  </jobNames>
+  <jobFilters/>
+  <columns>
+    <hudson.views.StatusColumn/>
+    <hudson.views.WeatherColumn/>
+    <org.jenkinsci.plugins.categorizedview.IndentedJobColumn/>
+    <hudson.views.LastDurationColumn/>
+    <jenkins.plugins.extracolumns.JobTypeColumn plugin="extra-columns@1.15">
+      <usePronoun>true</usePronoun>
+    </jenkins.plugins.extracolumns.JobTypeColumn>
+    <jenkins.plugins.extracolumns.BuildParametersColumn plugin="extra-columns@1.15">
+      <singlePara>false</singlePara>
+      <parameterName></parameterName>
+    </jenkins.plugins.extracolumns.BuildParametersColumn>
+    <jenkins.plugins.extracolumns.SlaveOrLabelColumn plugin="extra-columns@1.15"/>
+    <jenkins.plugins.extracolumns.TestResultColumn plugin="extra-columns@1.15">
+      <testResultFormat>0</testResultFormat>
+    </jenkins.plugins.extracolumns.TestResultColumn>
+    <hudson.views.BuildButtonColumn/>
+    <jenkins.plugins.extracolumns.DisableProjectColumn plugin="extra-columns@1.15">
+      <useIcon>true</useIcon>
+    </jenkins.plugins.extracolumns.DisableProjectColumn>
+    <jenkins.plugins.extracolumns.WorkspaceColumn plugin="extra-columns@1.15"/>
+    <jenkins.plugins.extracolumns.LastBuildConsoleColumn plugin="extra-columns@1.15"/>
+  </columns>
+  <includeRegex>.*</includeRegex>
+  <recurse>true</recurse>
+  <groupingRules/>
+  <categorizationCriteria/>
+</org.jenkinsci.plugins.categorizedview.CategorizedJobsView>

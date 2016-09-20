@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hudson.plugins.view.dashboard.Dashboard plugin="dashboard-view@2.9.6">
+  <name>Dashboard</name>
+  <filterExecutors>false</filterExecutors>
+  <filterQueue>false</filterQueue>
+  <properties class="hudson.model.View$PropertyList"/>
+  <jobNames>
+    <comparator class="hudson.util.CaseInsensitiveComparator"/>
+  </jobNames>
+  <jobFilters/>
+  <columns>
+    <hudson.views.StatusColumn/>
+    <hudson.views.WeatherColumn/>
+    <hudson.views.JobColumn/>
+    <hudson.views.LastSuccessColumn/>
+    <hudson.views.LastFailureColumn/>
+    <hudson.views.LastDurationColumn/>
+    <hudson.views.BuildButtonColumn/>
+    <hudson.plugins.favorite.column.FavoriteColumn plugin="favorite@1.16"/>
+  </columns>
+  <includeRegex>.*</includeRegex>
+  <recurse>false</recurse>
+  <useCssStyle>false</useCssStyle>
+  <includeStdJobList>false</includeStdJobList>
+  <leftPortletWidth>50%</leftPortletWidth>
+  <rightPortletWidth>50%</rightPortletWidth>
+  <leftPortlets>
+    <hudson.plugins.view.dashboard.builds.LatestBuilds>
+      <id>dashboard_portlet_26023</id>
+      <name>Latest builds</name>
+      <numBuilds>10</numBuilds>
+    </hudson.plugins.view.dashboard.builds.LatestBuilds>
+  </leftPortlets>
+  <rightPortlets>
+    <hudson.plugins.view.dashboard.test.TestTrendChart>
+      <id>dashboard_portlet_28210</id>
+      <name>Test Trend Chart</name>
+      <graphWidth>300</graphWidth>
+      <graphHeight>220</graphHeight>
+      <dateRange>0</dateRange>
+      <dateShift>0</dateShift>
+      <displayStatus>ALL</displayStatus>
+    </hudson.plugins.view.dashboard.test.TestTrendChart>
+  </rightPortlets>
+  <topPortlets/>
+  <bottomPortlets>
+    <hudson.plugins.analysis.collector.dashboard.WarningsTablePortlet plugin="analysis-collector@1.43">
+      <id>dashboard_portlet_25694</id>
+      <name>Warnings per project</name>
+      <canHideZeroWarningsProjects>false</canHideZeroWarningsProjects>
+      <useImages>false</useImages>
+      <warningsAggregator>
+        <isCheckStyleActivated>false</isCheckStyleActivated>
+        <isDryActivated>false</isDryActivated>
+        <isFindBugsActivated>false</isFindBugsActivated>
+        <isPmdActivated>false</isPmdActivated>
+        <isOpenTasksActivated>true</isOpenTasksActivated>
+        <isWarningsActivated>true</isWarningsActivated>
+        <hideJobPrefix>false</hideJobPrefix>
+      </warningsAggregator>
+    </hudson.plugins.analysis.collector.dashboard.WarningsTablePortlet>
+    <hudson.plugins.tasks.dashboard.WarningsTablePortlet plugin="tasks@4.45">
+      <id>dashboard_portlet_1861</id>
+      <name>Open tasks per project</name>
+      <canHideZeroWarningsProjects>false</canHideZeroWarningsProjects>
+    </hudson.plugins.tasks.dashboard.WarningsTablePortlet>
+    <hudson.plugins.view.dashboard.stats.StatBuilds>
+      <id>dashboard_portlet_7949</id>
+      <name>Build statistics</name>
+    </hudson.plugins.view.dashboard.stats.StatBuilds>
+  </bottomPortlets>
+</hudson.plugins.view.dashboard.Dashboard>

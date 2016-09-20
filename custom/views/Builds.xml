@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.smartcodeltd.jenkinsci.plugins.buildmonitor.BuildMonitorView plugin="build-monitor-plugin@1.6+build.159">
+  <name>Builds</name>
+  <filterExecutors>false</filterExecutors>
+  <filterQueue>false</filterQueue>
+  <properties class="hudson.model.View$PropertyList"/>
+  <jobNames>
+    <comparator class="hudson.util.CaseInsensitiveComparator"/>
+  </jobNames>
+  <jobFilters/>
+  <columns/>
+  <includeRegex>.*</includeRegex>
+  <recurse>true</recurse>
+  <title>Builds</title>
+  <config>
+    <order class="com.smartcodeltd.jenkinsci.plugins.buildmonitor.order.ByDisplayName"/>
+  </config>
+</com.smartcodeltd.jenkinsci.plugins.buildmonitor.BuildMonitorView>

@@ -3,4 +3,10 @@ util.sh
 build.sh
 init.sh
 run.sh
-
+container-init.sh
+jenkins-server/Dockerfile
+jenkins-slave/evarga/Dockerfile
+jenkins-slave/evarga/dind/Dockerfile
+.jjb.yml
+.jjb-pipeline-build-step.yml
+.jjb-docker-dry-run.yml

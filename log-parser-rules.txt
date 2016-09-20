@@ -1,0 +1,32 @@
+
+# Generic (Ant, Make, Py testrepository, etc)
+#error /[Ee]rror:/
+#warn /[Ww]arning:/
+error /(?i)error:/
+warn /(?i)warning:/
+
+# Du
+error /ERROR\//
+warn /WARNING\//
+
+# junit
+failure /[Ff]ail.*:/
+
+# Match OK results
+
+ok /^[Ff]finished.*/
+ok /^[Dd]one.*/
+ok /^[Rr]eady.*/
+ok /^[Ii]nstalled.*/
+
+# Ant
+ok /BUILD\ SUCCESSFUL/
+failure /BUILD\ FAILED/
+
+
+# Jenkins Build Command line invocations
+info /^\[workspace\]\ \$\ .*/
+# Verbose shell script (bash -xe)
+info /^\++\ .*/
+
+

@@ -1,0 +1,29 @@
+# Docker cheatsheet
+
+docker_list_all_cnames()
+{
+  docker inspect --format='{{.Name}}' $(docker_list_all_containers_ids)
+}
+
+docker_list_running_containers_ids()
+{
+  docker ps -q $@ --no-trunc
+}
+
+docker_list_all_containers_ids()
+{
+  docker_list_running_containers_ids -a
+}
+
+docker_container_with_image()
+{
+  docker_list_all_cnames
+}
+
+docker inspect --format='{{.Name}} {{.Image}}' $(docker_list_all_containers_ids)
+	
+image_name=jenkins-mpe	
+container=$(docker ps -a | grep '\<'$image_name'\>' | cut -f1 -d' ')
+echo containerized at $container
+docker ps -a | grep $container
+

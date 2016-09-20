@@ -1,0 +1,14 @@
+# PROJECT                  PARAMS
+jnk/jtb/jtb-gh-travis
+jnk/user-conf-free-git     Build_Deps_Default_Paths=1
+jnk/user-conf-gh-travis
+
+jtb-base-0
+
+#jnk/examples/docker-any-slave-example
+
+docker-jenkins-dry-run-pipeline
+docker-jenkins-pipeline    Build_Version=2.0 Build_Tag=auto Rebuild=1
+
+# Simple table with projects/parameters to trigger after update.sh
+# vim:ft=sh:

@@ -1,0 +1,55 @@
+
+- job:
+    name: docker-jenkins-pipeline
+    version: 0.0.2 # docker-jenkins
+
+    description: |
+      Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)
+    enabled: false
+
+    project-type: workflow
+
+    parameters:
+
+    - choice:
+        name: Build_Version
+        choices:
+        - "2.0"
+        - "1.651.1"
+        - "1.565.3"
+
+    - choice:
+        name: Build_Tag
+        choices:
+        - "latest"
+        - "auto"
+        - "dev"
+
+    - bool:
+        name: Rebuild
+        default: False
+        description: |
+          TODO: remove images (and its layers) if they exist?
+
+    triggers:
+    - pollscm:
+        cron: "*/1 * * * *" 
+
+    dsl:
+      # FIXME: github:dotmpe/jenkins-jobs-builder #f_pipeline_dsl
+      #dsl-file: .Jenkinsfile
+      #needs-workspace: true
+
+      script-name: .Jenkinsfile
+
+      scm:
+      - git:
+          url: https://github.com/dotmpe/docker-jenkins.git
+          #url: git@github.com:dotmpe/docker-jenkins.git
+          branches:
+          - origin/dev
+          local-branch: dev
+          skip-tag: true
+          wipe-workspace: true
+
+

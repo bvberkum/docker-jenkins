@@ -1,29 +1,63 @@
 #!/bin/sh
 
-# Id: docker-jenkins-mpe/0.0.1 build.sh
+# Id: docker-jenkins/0.0.2 build.sh
 
-test -n "$1" && tag="$1" || tag=latest
+scriptname=build
 
-# set env defaults
-test -n "$image_name" || image_name=jenkins-mpe:$tag
+test -n "$tag" || . ./vars.sh "$@"
+
+set -e
+
 
 # remove previous images and containers using this repository+tag
+docker images | grep ^$image_ref && {
 
-sudo docker images | grep ^$image_name && {
+  true "$Build_Remove_Existing" && {
+    # TODO: see about deleting all layers in image
 
-  container=$(sudo docker ps -a | grep '\<'$image_name'\>' | cut -f1 -d' ')
-  test -n "$container" && {
-    echo "Forcing remove of (possibly running) container"
-    sudo docker rm -f $container
+    container=$(docker ps -a | grep '\s\<'$cname'\>[\s$]*' | cut -f1 -d' ')
+    #test -n "$container" && {
+    #  echo "Forcing remove of (possibly running) container"
+    #  docker rm -f $cname
+    #}
+
+    docker rmi -f $image_ref
+
+  } || {
+
+    err "Image already exists."
   }
-
-  sudo docker rmi -f $image_name
 
 }
 
-echo "Building new image for $image_name"
 
-# run
-sudo docker build -t $image_name .
+log "Building new image for $image_ref"
+
+case "$image_type" in
+
+  jenkins-server* )
+
+      sed -i.bak 's/FROM jenkins:.*/FROM jenkins:'$tag'/' $dckrfile
+
+      trueish "$guided_server_setup" \
+        || dckr_build_f=" --build-arg jenkins_install_wizard=false "
+
+    ;;
+
+#  jenkins-slave )
+#    ;;
+
+esac
+
+
+docker build $dckr_build_f \
+  $build_args \
+  -f $dckrfile \
+  -t $image_ref \
+  .
+
+
+# XXX: git checkout $dckrfile
+
 
 

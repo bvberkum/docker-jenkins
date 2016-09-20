@@ -1,73 +1,100 @@
 #!/bin/sh
 
-# Id: docker-jenkins-mpe/0.0.1 run.sh
+# Start fresh jenkins.mpe container with name, destroying previous instance with
+# name.
 
-. ./util.sh
-test -n "$scriptname" || scriptname=run
+# Id: docker-jenkins/0.0.2 run.sh
 
-test -n "$1" && tag="$1" || tag=latest
-test -n "$2" && port="$1" || port=8007
+set -e
 
-test -n "$image_name" || image_name=jenkins-mpe:$tag
+scriptname=run
 
-test -n "$pref" || pref=$(hostname -s)_
-test -n "$container_name" || container_name=${pref}jenkins
-	
-test -n "$DCKR_CONF" || DCKR_CONF=~/.conf/dckr/
-test -n "$DCKR_VOL" || DCKR_VOL=/Volumes/dckr
-
-test -e "$DCKR_CONF" || err "Missing docker config dir $DCKR_CONF" 1
-test -e "$DCKR_VOL" || err "Missing docker volumes dir $DCKR_VOL" 1
+test -n "$tag" || . ./vars.sh "$@"
 
 
-container=$(sudo docker ps -a | grep '\<'$container_name'\>' | cut -f1 -d' ')
-test -n "$container" && {
-  log "Forcing remove of (possibly running) container"
-  sudo docker rm -f $container
-}
+# forcibly remove existing named container
+trueish "$Build_Destroy_Existing" && {
+  test -n "$cid" && {
+    log "Forcing remove of existing container ($cname, $cid)"
+    docker rm -f $cid
+  }
+  cid=
+} || noop
 
-#file:/var/jenkins_home/init.groovy.d/executors.groovy
-cp executors.groovy $DCKR_VOL/jenkins/init.groovy.d/executors.groovy
+trueish "$Run_Reset_Volume" && {
+  rm -rf $jenkins_home
+  log "Truncated jenkins_home volume ($jenkins_home)"
+} || noop
+
+mkdir -vp $jenkins_home
+
 
 dckr_run()
 {
-  log "Starting new container for $container_name"
+  log "Starting new container for $cname"
 
-  sudo docker run \
-    -p $port:8080 \
-    -v $DCKR_VOL/ssh:/docker-ssh:ro \
-    -v $DCKR_VOL/jenkins:/var/jenkins_home:rw \
+  test -e $image_type/run.sh && {
+    . ./$image_type/run.sh
+  }
+
+  test -e $env_vars_file && {
+    log "Using env-file $env_vars_file"
+    dckr_run_f="$dckr_run_f --env-file ./$env_vars_file"
+  }
+
+  log "Running: 'docker run $dckr_run_f \
     -v /etc/localtime:/etc/localtime:ro \
-    $@ \
-    --name $container_name \
-    $image_name
+    --hostname $chostname \
+    --name $cname \
+    $image_ref'"
+
+  cid=$(docker run $dckr_run_f \
+    -v /etc/localtime:/etc/localtime:ro \
+    --hostname $chostname \
+    --name $cname \
+    $image_ref)
+
+  which jsotk.py 1>/dev/null 2>&1 && {
+    docker inspect $cname | \
+      jsotk.py --pretty -O yaml objectpath - '$..*[@.Ports]'
+  }
 }
 
-#dckr_exec()
-#{
-#  sudo docker exec -t $container_name $@
-#}
-#
-#dckr_cp()
-#{
-#  test -z "$2" && p=$2 || p=$1
-#  sudo docker cp -t $1 $container_name:$p
-#}
+preconfig()
+{
+  log "Pre-configure"
 
-test "$scriptname" = "run" && {
-  case "$1" in
-    '')
-      dckr_run -d
+  case "$image_type" in
+
+    jenkins-server* )
+
+        #cp log-parser-rules.txt $jenkins_home
+
+        mkdir -vp $jenkins_home/init.groovy.d/
+
+        cp script/executors.groovy $jenkins_home/init.groovy.d/executors.groovy
+
+        {
+          echo Build_Admin_User="'$Build_Admin_User'"
+          echo Build_Admin_Password="'$Build_Admin_Password'"
+          echo Build_Admin_Public_Key="'$(cat $DCKR_VOL/ssh/id_?sa.pub)'"
+        } > setup-user-security.init
+        mv setup-user-security.init $jenkins_home/init.groovy.d/
+        cp script/setup-user-security.groovy $jenkins_home/init.groovy.d/setup-user-security.groovy
+
+        test -e custom/ && cp -r custom/ $jenkins_home/custom
       ;;
-    int*)
-      dckr_run -ti
+
+    jenkins-slave* )
       ;;
-    -h*|help*)
-      echo "Usage $scriptname [|int(eractive)|-h|help]"
-      ;;
-    *)
-      ;;
+
   esac
 }
 
+
+log "Default run"
+preconfig
+dckr_run_f="$dckr_run_f -d"
+dckr_run
+export cid=$cid
 

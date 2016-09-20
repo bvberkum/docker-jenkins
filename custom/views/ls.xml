@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<listView>
+  <owner class="hudson" reference="../../.."/>
+  <name>ls</name>
+  <filterExecutors>false</filterExecutors>
+  <filterQueue>false</filterQueue>
+  <properties class="hudson.model.View$PropertyList"/>
+  <jobNames>
+    <comparator class="hudson.util.CaseInsensitiveComparator"/>
+  </jobNames>
+  <jobFilters/>
+  <columns>
+    <hudson.views.StatusColumn/>
+    <hudson.views.WeatherColumn/>
+    <hudson.views.JobColumn/>
+    <hudson.views.LastSuccessColumn/>
+    <hudson.views.LastFailureColumn/>
+    <hudson.views.LastDurationColumn/>
+    <jenkins.plugins.extracolumns.TestResultColumn plugin="extra-columns@1.17">
+      <testResultFormat>1</testResultFormat>
+    </jenkins.plugins.extracolumns.TestResultColumn>
+    <jenkins.plugins.extracolumns.LastBuildNodeColumn plugin="extra-columns@1.17"/>
+    <jenkins.plugins.extracolumns.LastBuildConsoleColumn plugin="extra-columns@1.17"/>
+    <hudson.views.BuildButtonColumn/>
+    <jenkins.plugins.extracolumns.DisableProjectColumn plugin="extra-columns@1.17">
+      <useIcon>true</useIcon>
+    </jenkins.plugins.extracolumns.DisableProjectColumn>
+    <jenkins.plugins.extracolumns.ConfigureProjectColumn plugin="extra-columns@1.17"/>
+  </columns>
+  <includeRegex>.*</includeRegex>
+  <recurse>true</recurse>
+</listView>

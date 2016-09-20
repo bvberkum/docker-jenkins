@@ -1,1 +1,5 @@
+custom/*.png
+jenkins-plugins.*
 plugins[0-9].txt
+.jenkins-jobs-*.ini
+.env*.sh

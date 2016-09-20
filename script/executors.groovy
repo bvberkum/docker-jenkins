@@ -4,6 +4,6 @@ import jenkins.model.*
 
 def instance = Jenkins.getInstance()
 
-instance.setNumExecutors(5)
+instance.setNumExecutors(3)
 
 instance.save()

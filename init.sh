@@ -1,71 +1,84 @@
-#!/usr/bin/env bash
+#!/bin/sh
+# Post-SCM script
 
-# Id: docker-jenkins-mpe/0.0.1 init.sh
+scriptname=init
 
-. $(dirname $0)/util.sh
-scriptname=/opt/dotmpe/docker-jenkins/init
+. ./vars.sh "$@"
 
-SRC_PREFIX=/src/
 
-install_jjb()
-{
-  log "Cloning JJB.."
-  mkdir -vp $SRC_PREFIX
-  git clone https://git.openstack.org/openstack-infra/jenkins-job-builder $SRC_PREFIX/build/jjb \
-    || err "Error cloning to $SRC_PREFIX/build/jjb" 1
+set -e
 
-  log "Installing JJB.."
-  pushd $SRC_PREFIX/build/jjb
-  #sudo python setup.py install
-  python setup.py install \
-    && log "JJB install complete" \
-    || err "Error during JJB installation" 1
-  popd
 
-  # XXX --user
-  #export PATH=$PATH:/var/jenkins_home/.local/bin
+cid=$(docker inspect --format="{{.Id}}" $cname || echo "")
 
-  jenkins-jobs --version && {
-    log "JJB install OK"
-  } || {
-    err "JJB installation invalid" 1
+trueish "$Build_Destroy_Existing" || {
+
+  trueish "$Build_Only" || {
+    # Only one instance per name can exist
+    test -z "$cid" \
+        || err "Another container named '$cname' exists" 1
   }
 }
 
-init_jjb()
-{
-  cat <<HERE
+trueish "$Build_Image" && {
 
-[job_builder]
-allow_empty_variables=True
-ignore_cache=True
-keep_descriptions=True
-include_path=.:config/build
-recursive=False
-allow_duplicates=False
-exclude=.travis.*:build:manual:vendors
+  case "$image_type" in jenkins-server* )
 
-[jenkins]
-user=admin
-password=$2
-url=http://$1/
-query_plugins_info=False
+    trueish "$Recompile_Plugins" && {
+      . ./script/sh/get-jenkins-plugins.sh
 
-HERE
+      # Recompile plugin deps
+      log "Updating plugins from default list"
+      update_std_pluginlist
+
+      # Note: Jobs (JTB etc), Views (custom/views) have plugin deps
+      # Views uses the list above.
+    }
+  ;; esac
+
+  log "Starting build script"
+  . ./build.sh || exit $?
+
+  log "Tagging latest $vendor/$image_type (from $image_ref)"
+  docker tag $image_ref $vendor/$image_type:latest
 }
 
-init_cli()
-{
-  cat <<HERE
-#!/bin/sh
-cd $$JENKINS_HOME/
-java -jar war/WEB-INF/jenkins-cli.jar -s http://$1/ \$@
-HERE
+trueish "$Build_Only" && exit 0
+
+
+. ./run.sh
+
+
+test -n "$cid" || exit 2
+log "Started container cid=$cid"
+
+trueish "$Build_Config" || exit 0
+
+. ./config.sh
+
+
+
+trueish "$Build_Updates" && {
+
+  # Customize, update Views. Regenerate jobs using JJB+JTB
+  . ./update.sh || exit $?
+
 }
 
-test -n "$1" && type $1 &> /dev/null && {
-  cmd=$1
-  shift 1
-  $cmd $@
-}
+echo "Container ready, docker ps ($cname):"
+docker ps | grep $cname
 
+#echo "Logs:"
+#docker logs $cname
+
+echo "IP Address/Ports"
+echo \
+  $(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $cid) \
+  $(docker port $cid)
+# $(docker inspect --format='{{range $p, $conf := .NetworkSettings.Ports}} {{$p}} -> {{(index $conf 0).HostPort}} {{end}}' $cid)
+
+
+echo "Image $image_ref build, and running at $hostname"
+
+
+# Id: docker-jenkins/0.0.2 init.sh
