@@ -1,5 +1,4 @@
-
-:Version: 0.0.1-dev
+:Version: 0.0.1
 
 Jenkins Server
   - `bvberkum/jenkins-server <//hub.docker.com/r/bvberkum/jenkins-server>`_
@@ -7,6 +6,8 @@ Jenkins Server
     .. image:: https://badge.imagelayers.io/bvberkum/docker-jenkins:latest.svg
         :target: https://imagelayers.io/?images=bvberkum/docker-jenkins:latest
         :alt: Get your own badge on imagelayers.io
+
+  Customized Jenkins docker.
 
 
 
