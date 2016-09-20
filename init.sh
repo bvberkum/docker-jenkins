@@ -96,6 +96,10 @@ echo \
 # $(docker inspect --format='{{range $p, $conf := .NetworkSettings.Ports}} {{$p}} -> {{(index $conf 0).HostPort}} {{end}}' $cid)
 
 
+note "Looking for warnings, exceptions, errors in docker log:"
+docker logs $cname 2>&1 | grep -iE 'warn|exception|error' || stderr ok "Nothing found in log"
+
+
 info "Image $image_ref build, and running at $hostname"
 
 

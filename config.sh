@@ -52,22 +52,19 @@ trueish "$Config_Init_Keys" && {
       $cname:$chome/.docker/
 
   } || noop
-
-
-  docker exec -u root $cname chown -R jenkins:jenkins $chome/ 2>/dev/null || {
-
-    info "Error chown $chome/: $? (Operation not permitted)"
-  }
-
-  #docker exec -u root $cname chown -R jenkins:jenkins $chome/.ssh/ || noop
-
-  info "SSH folder list:"
-  docker exec -u jenkins $cname ls -la $chome/.ssh/
-  docker exec -u jenkins $cname test -w $chome/.ssh/authorized_keys || {
-    error "Authorized keys is not writable"
-  }
-
 }
+
+docker exec -u root $cname chown -R jenkins:jenkins $chome/ 2>/dev/null || {
+
+  info "Error chown $chome/: $? (Operation not permitted)"
+}
+
+info "SSH folder list:"
+docker exec -u jenkins $cname ls -la $chome/.ssh/
+docker exec -u jenkins $cname test -w $chome/.ssh/authorized_keys || {
+  error "Authorized keys is not writable"
+}
+
 
 
 case "$image_type" in

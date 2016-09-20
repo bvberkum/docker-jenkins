@@ -30,7 +30,8 @@ case "$image_type" in
         # Customize header logo+title
         info "Customizing..."
         docker exec -ti $cname \
-            /opt/dotmpe/docker-jenkins/init.sh customize
+            /opt/dotmpe/docker-jenkins/init.sh customize \
+	    || error "Container `init.sh customize` failed" $?
       }
 
 

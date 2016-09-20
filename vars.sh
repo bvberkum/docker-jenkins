@@ -15,7 +15,7 @@ test -n "$DCKR_CONF" || DCKR_CONF=~/.conf/dckr/
 test ! -e "$DCKR_CONF/$hostname/vars.sh" || {
   . $DCKR_CONF/$hostname/vars.sh
 }
-test -n "$DCKR_VOL" || DCKR_VOL=/Volumes/dckr
+test -n "$DCKR_VOL" || DCKR_VOL=/srv/docker-volumes-local
 
 test -n "$VERBOSE" && {
   test ! -e "$DCKR_CONF" || info DCKR_CONF=$DCKR_CONF

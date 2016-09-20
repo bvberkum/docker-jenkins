@@ -260,12 +260,14 @@ wait_for_startup()
 customize()
 {
   cd $JENKINS_HOME
-  for x in title.png headshot.png
+  for x in custom/*.png
   do
     test -e custom/$x && {
       mkdir -vp war/images/
       cp custom/$x war/images/
       info "Customized war/images/$x"
+    } || {
+      warn "$x" 
     }
   done
 }

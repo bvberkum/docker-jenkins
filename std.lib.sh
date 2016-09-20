@@ -201,7 +201,7 @@ log()
     && key="$scriptname.$(basename "$SHELL")" \
     || key="$scriptname.(sh)"
   test -z "$hostname" \
-    || key="$hostname.$key"
+    || key="$hostname:$key"
 
   case $stdout_type in t )
         test -n "$subcmd" && key=${key}${bb}:${bk}${subcmd}

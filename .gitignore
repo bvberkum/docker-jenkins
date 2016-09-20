@@ -1,3 +1,5 @@
 plugins[0-9].txt
 .jenkins-jobs-*.ini
 .env*.sh
+jenkins-plugins.*
+.jenkins-*env-*.sh

@@ -12,7 +12,11 @@
     See also first edition of setup guide.
 
 (0.0.4-dev)
-  In progress.
+  - Fixed user security setup (broke on wrong comment format).
+  - Added preconfigured Simple Theme settings file.
+  - Added Ivy plugin to keep exceptions down, and maybe startup time too.
+  - Minor updates in verbosity. Added grep for warn/error/exception on docker logs at the end.
+  - Misc. other cleaning of build.  
 
 
 .. [#] `docker 1.12 breaks plugin because of HostConfig <https://issues.jenkins-ci.org/browse/JENKINS-36080>`_

@@ -93,12 +93,10 @@ preconfig()
 
         docker exec jnk-vol-tmp mkdir -vp $jenkins_home/.ssh $jenkins_home/init.groovy.d/
 
-        #cp log-parser-rules.txt $jenkins_home
-
         docker cp script/executors.groovy jnk-vol-tmp:$jenkins_home/init.groovy.d/executors.groovy
 
         {
-          echo "# Parameters for init.groovy.d/setup-user-security.groovy"
+          echo "// Parameters for init.groovy.d/setup-user-security.groovy"
           echo Build_Admin_User="'$Build_Admin_User'"
           echo Build_Admin_Password="'$Build_Admin_Password'"
           echo Build_Admin_Public_Key="'$(cat $DCKR_VOL/ssh/id_?sa.pub)'"
@@ -106,10 +104,14 @@ preconfig()
 
         docker cp setup-user-security.init jnk-vol-tmp:$jenkins_home/init.groovy.d/setup-user-security.init
         docker cp script/setup-user-security.groovy jnk-vol-tmp:$jenkins_home/init.groovy.d/setup-user-security.groovy
+        rm setup-user-security.init
 
-        test -e custom/ && docker cp custom/ jnk-vol-tmp:$jenkins_home/custom
+        docker cp custom/ jnk-vol-tmp:$jenkins_home/custom
 
-	rm setup-user-security.init
+        docker cp custom/org.codefirst.SimpleThemeDecorator.xml \
+          jnk-vol-tmp:$jenkins_home/org.codefirst.SimpleThemeDecorator.xml
+
+        docker exec -ti jnk-vol-tmp chown -R 1000:1000 $jenkins_home/    
 
         docker rm -f jnk-vol-tmp
 
