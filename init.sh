@@ -33,10 +33,15 @@ test -e "$(echo $DCKR_VOL/ssh/id_?sa.pub | tr ' ' '\n' | head -n 1)" || {
 }
 
 test -e $DCKR_VOL/ssh/known_hosts || touch $DCKR_VOL/ssh/known_hosts
-test -e $DCKR_VOL/ssh/authorized_keys || touch $DCKR_VOL/ssh/authorized_keys
+test -e $DCKR_VOL/ssh/authorized_keys || {
 
-note "Using users authorized_keys"
-cp $HOME/.ssh/authorized_keys $DCKR_VOL/ssh
+  test -e $HOME/.ssh/authorized_keys && {
+    note "Using users authorized_keys"
+    cp $HOME/.ssh/authorized_keys $DCKR_VOL/ssh
+  } || {
+    touch $DCKR_VOL/ssh/authorized_keys
+  }
+}
 
 
 trueish "$Build_Image" && {

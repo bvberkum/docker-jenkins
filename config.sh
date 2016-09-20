@@ -25,7 +25,6 @@ trueish "$Config_Init_Keys" && {
 
   test -e $DCKR_VOL/ssh && {
 
-
     docker cp $DCKR_VOL/ssh/id_?sa $cname:$chome/.ssh/
     docker cp $DCKR_VOL/ssh/id_?sa.pub $cname:$chome/.ssh/
     docker cp $DCKR_VOL/ssh/authorized_keys $cname:$chome/.ssh/
