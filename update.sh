@@ -135,6 +135,13 @@ case "$image_type" in
 
       }
 
+      test -z "$Jenkins_Default_View" || {
+        docker exec -ti -u jenkins $cname /opt/dotmpe/docker-jenkins/init.sh \
+          set_default_view $Jenkins_Default_View && \
+	     stderr ok "Default view set to '$Jenkins_Default_View'" \
+	     || err "Default view set failed"
+      }
+
 
       trueish "$Update_Views" && {
 

@@ -262,10 +262,10 @@ customize()
   cd $JENKINS_HOME
   for x in custom/*.png
   do
-    test -e custom/$x && {
+    test -e $x && {
       mkdir -vp war/images/
-      cp custom/$x war/images/
-      info "Customized war/images/$x"
+      cp $x war/images/
+      info "Customized war/images/$(basename $x)"
     } || {
       warn "$x" 
     }
@@ -357,13 +357,27 @@ reset_login()
     | jenkins-cli groovy =
 }
 
+set_default_view()
+{
+  test -n "$1" || err "View ID expected" 1
+  grep -q primaryView $HOME/config.xml && {
+    sed -i.bak \
+      's#<primaryView>.*</primaryView>#<primaryView>'"$1"'</primaryView>#g' \
+      $HOME/config.xml
+  } || {
+    sed -i.bak \
+      's#</hudson>#<primaryView>'"$1"'</primaryView></hudson>#g' \
+      $HOME/config.xml
+  }
+}
+
 add_user_public_key()
 {
   test -n "$1" || err "Expected user" 1
   test -n "$2" || err "Expected key" 1
 
   sed -i.bak 's#<authorizedKeys></authorizedKeys>#<authorizedKeys>'"$2"'</authorizedKeys>#g' \
-    /var/jenkins_home/users/$1/config.xml || return $?
+    $HOME/users/$1/config.xml || return $?
 }
 
 

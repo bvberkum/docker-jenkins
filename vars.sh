@@ -38,6 +38,8 @@ test -n "$env_vars_file" || env_vars_file=.$image_type-env-$env.sh
 test -n "$env" || error "No env given" 1
 test -n "$tag" || error "No tag given" 1
 
+test -n "$Jenkins_Default_View" || Jenkins_Default_View=ls-tests
+
 case "$image_type" in
 
   jenkins-server* )
