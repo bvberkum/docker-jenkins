@@ -90,10 +90,10 @@ USER jenkins
 ENV SRC_PREFIX /src/
 
 # Install JJB
-ARG JJB_TAG=master
+ARG JJB_BRANCH=master
 ARG JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
 RUN \
-  /opt/dotmpe/docker-jenkins/init.sh try_install_jjb $JJB_TAG && \
+  /opt/dotmpe/docker-jenkins/init.sh try_install_jjb && \
   chown jenkins:staff -R $JJB_SRC_DIR
 
 # Configure JJB

@@ -111,7 +111,7 @@ test -n "$Build_Copy_JJB" || Build_Copy_JJB=0
 test -n "$Build_URL_Include_Port" || Build_URL_Include_Port=1
 
 test -n "$JTB_TAG" || JTB_TAG=dev
-test -n "$JJB_TAG" || JJB_TAG=build
+test -n "$JJB_BRANCH" || JJB_BRANCH=f_pipeline_dsl
 
 
 # Check if requested env matches with current docker server
@@ -277,7 +277,7 @@ case "$image_type" in
         echo "# Generated at by $0 at $(date)"
 
         echo JTB_TAG=$JTB_TAG
-        echo JJB_TAG=$JJB_TAG
+        echo JJB_BRANCH=$JJB_BRANCH
 
         echo JJB_USER=$Build_Admin_User
         echo JJB_PASSWORD=$Build_Admin_Password
