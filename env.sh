@@ -18,7 +18,7 @@ case "$hostname" in
 
     ;;
 
-  trusty64_docker_vagrant_boreas_mpe )
+  trusty64-docker-vagrant-boreas-mpe )
 
       ##export DCKR_VOL=/srv/docker-local
 

@@ -369,6 +369,9 @@ set_default_view()
       's#</hudson>#<primaryView>'"$1"'</primaryView></hudson>#g' \
       $HOME/config.xml
   }
+  sleep 2
+  jenkins-cli safe-restart &
+  return 0
 }
 
 add_user_public_key()
