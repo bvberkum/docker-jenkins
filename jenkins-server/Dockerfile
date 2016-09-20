@@ -114,7 +114,7 @@ RUN cd && mkdir -vp .local/bin && \
 
 # Setup some autorun scripts to configure jenkins
 
-COPY script/executors.groovy /usr/share/jenkins/ref/init.groovy.d/
+COPY script/setup-executors.groovy /usr/share/jenkins/ref/init.groovy.d/
 #COPY script/set-global-build-env.groovy /usr/share/jenkins/ref/init.groovy.d/
 #COPY script/set-admin-email.groovy /usr/share/jenkins/ref/init.groovy.d/
 COPY script/setup-user-security.groovy /usr/share/jenkins/ref/init.groovy.d/

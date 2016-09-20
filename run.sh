@@ -93,7 +93,7 @@ preconfig()
 
         docker exec jnk-vol-tmp mkdir -vp $jenkins_home/.ssh $jenkins_home/init.groovy.d/
 
-        docker cp script/executors.groovy jnk-vol-tmp:$jenkins_home/init.groovy.d/executors.groovy
+        docker cp script/setup-executors.groovy jnk-vol-tmp:$jenkins_home/init.groovy.d/setup-executors.groovy
 
         {
           echo "// Parameters for init.groovy.d/setup-user-security.groovy"
@@ -111,7 +111,7 @@ preconfig()
         docker cp custom/org.codefirst.SimpleThemeDecorator.xml \
           jnk-vol-tmp:$jenkins_home/org.codefirst.SimpleThemeDecorator.xml
 
-        docker exec -ti jnk-vol-tmp chown -R 1000:1000 $jenkins_home/    
+        docker exec -ti jnk-vol-tmp chown -R 1000:1000 $jenkins_home/
 
         docker rm -f jnk-vol-tmp
 
