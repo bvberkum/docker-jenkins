@@ -13,13 +13,13 @@
     <hudson.views.StatusColumn/>
     <hudson.views.JobColumn/>
     <jenkins.plugins.extracolumns.LastBuildNodeColumn plugin="extra-columns@1.17"/>
-    <jenkins.plugins.extracolumns.TestResultColumn plugin="extra-columns@1.17">
-      <testResultFormat>1</testResultFormat>
-    </jenkins.plugins.extracolumns.TestResultColumn>
     <jenkins.plugins.extracolumns.BuildDescriptionColumn plugin="extra-columns@1.17">
       <columnWidth>80</columnWidth>
       <forceWidth>false</forceWidth>
     </jenkins.plugins.extracolumns.BuildDescriptionColumn>
+    <jenkins.plugins.extracolumns.TestResultColumn plugin="extra-columns@1.17">
+      <testResultFormat>1</testResultFormat>
+    </jenkins.plugins.extracolumns.TestResultColumn>
     <jenkins.plugins.extracolumns.LastBuildConsoleColumn plugin="extra-columns@1.17"/>
     <hudson.views.BuildButtonColumn/>
     <jenkins.plugins.extracolumns.DisableProjectColumn plugin="extra-columns@1.17">
