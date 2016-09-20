@@ -32,10 +32,11 @@ test -e "$(echo $DCKR_VOL/ssh/id_?sa.pub | tr ' ' '\n' | head -n 1)" || {
   ssh-keygen -t rsa -f $DCKR_VOL/ssh/id_rsa
 }
 
-test -e $DCKR_VOL/ssh/authorized_keys || {
-  note "Using users authorized_keys"
-  cp $HOME/.ssh/authorized_keys $DCKR_VOL/ssh
-}
+test -e $DCKR_VOL/ssh/known_hosts || touch $DCKR_VOL/ssh/known_hosts
+test -e $DCKR_VOL/ssh/authorized_keys || touch $DCKR_VOL/ssh/authorized_keys
+
+note "Using users authorized_keys"
+cp $HOME/.ssh/authorized_keys $DCKR_VOL/ssh
 
 
 trueish "$Build_Image" && {

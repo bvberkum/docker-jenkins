@@ -16,7 +16,7 @@ test -n "$hostname" || {
         exit 221
       ;;
     * )
-        hostname="$(hostname -s | tr 'A-Z.-' 'a-z__')"
+        hostnme="$(hostname -s | tr 'A-Z.-' 'a-z__')"
       ;;
   esac
 }
