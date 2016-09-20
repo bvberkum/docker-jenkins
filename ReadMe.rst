@@ -56,10 +56,10 @@ Dev
 - `Setup guide <doc/setup.rst>`__
 
 Branches
-  f_ci_pipeline
-    Main dev.
-  f_vartabs
-    Draft vars.tab
+  master
+    Releases. Stable, tested code.
+  dev
+    Development, testing.
 
 Issues
   - CLI works except with stdin. Taking the JAR out the container does not help.
@@ -69,19 +69,25 @@ Wishlist
   - Want to initialize title, preferably from fontfile and svg or someting.
     Right now copies custom/title.png and custom/headshot.png.
 
+  - <primaryView>Testing</primaryView>
   - Misc. initial settings now done by hand:
 
-    - turn of HTML description filtering in security settings
-    - Add public key to user
+    - Turn of HTML description filtering in security settings (done)
+    - Set Simple Theme to userContent.css/js (done)
+    - Add public key to user (done)
     - Get API key from user (for JJB)
-    - add docker cloud settings.
-      see script/configure-docker-cloud.groovy, possibly.
+    - Setup slaves (initial setup done)
+    - Add docker cloud settings (done)
 
-    - set admin email
-    - setup for (docker) slaves
-    - added better list view, need to set as default
-    - some global choice parameters
-    - add console output parsing rules
+    - TODO: set admin email, mailhost
+
+    - added better list view(s) (done),
+      TODO: set default view
+      config.xml: <primaryView>Testing</primaryView>
+
+    - some global choice parameters?
+    - add console output parsing rules..
+    - migrate/package Build Failure Analyzer files?
 
     - may also try 'jvm_options' = '-Djenkins.install.runSetupWizard=false'
       for manual 2.0 setup.
