@@ -14,14 +14,17 @@ get_env()
   test -n "$1" || set -- $env
   test -s ".env-api-$1.sh" || {
     log "Missing .env-api-$1.sh file.."
-    log "Enter a new username? (default: jenkins)"
+    log "Enter a new username? (default: $Build_Admin_User)"
     read confirm
 
     trueish "$confirm" && {
       log "Enter the username for API use"
       read api_user
+    } || {
+      api_user=$Build_Admin_User
     }
-    log "Enter the API user key"
+
+    log "Enter the '$Build_Admin_User' user API key"
     read api_secret
 
     test -n "$api_user" || error "missing api_user" 89
