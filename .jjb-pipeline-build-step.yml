@@ -6,7 +6,7 @@
     description: |
       <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
 
-      <p>(JTB/{version} .jjb-pipeline-build-step.yml)</p>
+      <p>(JTB/{version} .jjb-pipeline-build-step.yml, dev branch)</p>
 
     project-type: freestyle
 
