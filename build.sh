@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Id: docker-jenkins/0.0.2 build.sh
+# Id: docker-jenkins/0.0.3 build.sh
 
 scriptname=build
 
@@ -25,13 +25,13 @@ docker images | grep ^$image_ref && {
 
   } || {
 
-    err "Image already exists."
+    error "Image already exists."
   }
 
 }
 
 
-log "Building new image for $image_ref"
+info "Building new image for $image_ref"
 
 case "$image_type" in
 
@@ -50,14 +50,20 @@ case "$image_type" in
 esac
 
 
+log "docker build $dckr_build_f \
+  $build_args \
+  -f $dckrfile \
+  -t $image_ref \
+    . "
+
 docker build $dckr_build_f \
   $build_args \
   -f $dckrfile \
   -t $image_ref \
-  .
+    . || {
+      error "Build fail" $?
+    }
 
 
 # XXX: git checkout $dckrfile
-
-
 

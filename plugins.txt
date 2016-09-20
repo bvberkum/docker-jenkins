@@ -38,6 +38,7 @@ durable-task
 envinject
 extended-choice-parameter
 extra-columns
+ez-templates
 flexible-publish
 git
 git-changelog

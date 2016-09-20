@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# Id: docker-jenkins/0.0.2 util.sh
+# Id: docker-jenkins/0.0.3 util.sh
 
-version=0.0.2 # docker-jenkins
+version=0.0.3 # docker-jenkins
 
 set -e
 
@@ -10,25 +10,14 @@ test -n "$scriptdir" || scriptdir="$(dirname "$0")"
 
 . $scriptdir/table.lib.sh
 . $scriptdir/os.lib.sh
+. $scriptdir/std.lib.sh
 
-
-# stdio/stderr/exit util
-log()
-{
-	[ -n "$(echo "$*")" ] || return 1;
-	echo "[$hostname:$scriptname.sh:$cmd] $1"
-}
-err()
-{
-	[ -n "$(echo "$*")" ] || return 1;
-	echo "Error: $1 [$hostname:$scriptname.sh:$cmd]" 1>&2
-	[ -n "$2" ] && exit $2
-}
 
 incr_c()
 {
   c=$(( $c + 1 ))
 }
+
 
 trueish()
 {

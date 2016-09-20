@@ -20,7 +20,7 @@ RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 581
 RUN echo deb https://apt.dockerproject.org/repo ubuntu-trusty main > /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -qqy \
-        docker-engine
+        docker-engine=1.11.2-0~trusty
 
 
 RUN usermod jenkins -a -G users

@@ -1,5 +1,5 @@
 
-# Id: docker-jenkins/0.0.2
+# Id: docker-jenkins/0.0.3
 
 FROM jenkins:2.0
 
@@ -28,6 +28,7 @@ RUN chmod +x /opt/dotmpe/docker-jenkins/init.sh
 COPY util.sh /opt/dotmpe/docker-jenkins/
 COPY table.lib.sh /opt/dotmpe/docker-jenkins/
 COPY os.lib.sh /opt/dotmpe/docker-jenkins/
+COPY std.lib.sh /opt/dotmpe/docker-jenkins/
 
 # Setup up jenkins-cli
 #ARG jenkins_cli_jar_flags=-noKeyAuth
@@ -57,6 +58,11 @@ RUN RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive \
 RUN npm install -g bower grunt-cli
 
 
+RUN mkdir -vp /srv/project-local
+RUN chown jenkins:jenkins /srv/project-local
+RUN chmod g+rw /srv
+RUN chgrp jenkins /srv
+
 
 USER jenkins
 
@@ -65,15 +71,16 @@ ARG build_tag=dev
 #ARG build_tag=f_pipeline_dsl
 ARG build_meta=
 
-ARG SRC_PREFIX=/src/
-ENV JJB_HOME $SRC_PREFIX/jenkins-job-builder
-ENV JTB_HOME $SRC_PREFIX/jenkins-templated-builds
+ENV SRC_PREFIX /src/
+ARG JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
+ARG JTB_SRC_DIR=$SRC_PREFIX/jenkins-templated-builds
 
 #ENV PATH $PATH:$JENKINS_HOME/.local/bin
 
 RUN pip install  \
       ordereddict 'six>=1.5.2' \
-      PyYAML 'python-jenkins>=0.4.1' 'pbr>=0.8.2,<2.0'
+      PyYAML 'python-jenkins>=0.4.1' 'pbr>=0.8.2,<2.0' \
+      stevedore
 #      docutils
 
 RUN \
@@ -84,7 +91,7 @@ RUN \
 # Install JJB
 RUN \
   /opt/dotmpe/docker-jenkins/init.sh try_install_jjb && \
-  chown jenkins:staff -R $JJB_HOME
+  chown jenkins:staff -R $JJB_SRC_DIR
 
 # Configure JJB
 ARG jjb_user=jenkins

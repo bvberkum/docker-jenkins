@@ -21,7 +21,10 @@ generate_job()
 
         . ./script/sh/create-item-cb-folder.sh \
           && log "Created folder ($3)" \
-          || { err "failed creating folder ($3)"; return 2; }
+          || { 
+		err "failed creating folder ($3)"; 
+		return 2; 
+          }
       ;;
 
     jtb-prepare-preset )
@@ -31,7 +34,7 @@ generate_job()
 
     jtb-update-preset )
         docker exec $cname bash -c \
-          'jenkins-jobs update $JTB_HOME/'$(echo $2)'.yaml:$JTB_HOME/dist/base.yaml' \
+          'jenkins-jobs update $JTB_SRC_DIR/'$(echo $2)'.yaml:$JTB_SRC_DIR/dist/base.yaml' \
             || return $?
       ;;
 
@@ -47,7 +50,7 @@ generate_job()
             && log "Updated $1 project $2" \
             || err "Failed updating $1 project $2"
 
-        docker exec $cname bash -c 'rm $JTB_HOME/'$(echo $2)'.yaml'
+        docker exec $cname bash -c 'rm $JTB_SRC_DIR/'$(echo $2)'.yaml'
       ;;
 
     jtb )
@@ -78,9 +81,9 @@ generate_job()
               return
             }
         docker exec $cname bash -c \
-          'jenkins-jobs update $JTB_HOME/generic-gh-travis.yaml:$JTB_HOME/dist/base.yaml '$2 \
+          'jenkins-jobs update $JTB_SRC_DIR/generic-gh-travis.yaml:$JTB_SRC_DIR/dist/base.yaml '$2 \
             || err "Update GitHub/Travis job $2 failed"
-        docker exec $cname bash -c 'rm $JTB_HOME/generic-gh-travis.yaml'
+        docker exec $cname bash -c 'rm $JTB_SRC_DIR/generic-gh-travis.yaml'
       ;;
 
     jtb-presets )
@@ -92,8 +95,10 @@ generate_job()
       ;;
 
     jjb )
-        test -n "$jjb_config" || error "No jjb_config" 1
-        test -e "$jjb_config" || error "No jjb_config" 1
+        test -n "$jjb_config" || err "No jjb_config" 1
+        test -e "$jjb_config" || err "No jjb_config" 1
+	which jenkins-jobs >/dev/null 2>&1 || error "Local jenkins-jobs install required" 1
+        test -e "$2" || { err "No JJB file '$2'"; return 1; }
         jenkins-jobs --conf $jjb_config update $2 \
           && log "Updated $1 project config $2" \
           || err "Failed updating $1 project config $2"

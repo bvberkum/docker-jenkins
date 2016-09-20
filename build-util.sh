@@ -3,9 +3,9 @@ api_user= api_secret=
 
 test "$env" = "acc" \
   && ssh_credentials_id=a2165938-7dd3-475e-9102-15191067fd16 \
-  || ssh_credentials_id="$(hostname -s)-docker-${1}-ssh-key"
+  || ssh_credentials_id="${hostname}-docker-${1}-ssh-key"
 
-test -n "$ssh_credentials_id" || err "SSH credential ID expected" 1
+test -n "$ssh_credentials_id" || error "SSH credential ID expected" 1
 
 
 get_env()
@@ -23,6 +23,7 @@ get_env()
     log "Enter the API user key"
     read api_secret
 
+    test -n "$api_user" || error "missing api_user" 89
     store_env $1
   }
   . ./.env-api-$1.sh

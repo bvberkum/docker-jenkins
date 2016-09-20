@@ -15,8 +15,5 @@ if ( envVarsNodePropertyList == null || envVarsNodePropertyList.size() == 0 )
   envVars = envVarsNodePropertyList.get(0).getEnvVars()
 }
 
-//#envVars.put("JTB_HOME", "foo")
-//#envVars.put("JJB_HOME", "foo")
-
 Jenkins.getInstance().save()
 

@@ -10,51 +10,41 @@ type err >/dev/null 2>&1 || { . ./util.sh; }
 
 export cname
 
-log "Configuration"
+info "Configuration (chostname=$chostname, JENKINS_URL=$JENKINS_URL)"
 
-trueish "$Run_Reset_Volume" && {
+trueish "$Run_Init_Keys" && {
 
-  docker exec $cname ls -la $chome/.ssh
-
-  docker exec -u jenkins $cname test -w $chome/.ssh || {
-    echo "Dir is not writable"
-  }
+  docker exec -u jenkins $cname mkdir -vp $chome/.ssh/
 
   test -n "$ssh_vol" -a -e "$ssh_vol" && {
 
-    log ssh_vol=$ssh_vol
-    log $dckr_run_f
+    log "ssh_vol=$ssh_vol"
 
   } || {
 
-    log "Adding keys from DCKR_VOL ($DCKR_VOL/ssh)"
+    info "Adding keys from DCKR_VOL ($DCKR_VOL/ssh)"
 
     test -e $DCKR_VOL/ssh && {
       (
-        docker exec $cname mkdir -vp $chome/.ssh/
+        test -e "$(echo $DCKR_VOL/ssh/id_?sa.pub | tr ' ' '\n' | head -n 1)" \
+          || ssh-keygen -t rsa -f $DCKR_VOL/ssh/id_rsa
+
         docker cp $DCKR_VOL/ssh/id_?sa $cname:$chome/.ssh/
         docker cp $DCKR_VOL/ssh/id_?sa.pub $cname:$chome/.ssh/
         docker cp $DCKR_VOL/ssh/authorized_keys $cname:$chome/.ssh/
 
-      ) 2>/dev/null || {
+      ) || {
 
-        log "Error chown $chome/.ssh: $? (Operation not permitted)"
+        info "Error chown $chome/.ssh: $? (Operation not permitted)"
       }
-    } || err "No keydir found, skipped ($DCKR_VOL/ssh)"
+    } || error "No keydir found, skipped ($DCKR_VOL/ssh)"
   }
-
-  docker exec -u root $cname chown -R jenkins:jenkins $chome/.ssh/ || noop
-
-  docker exec -u jenkins $cname test -w $chome/.ssh/authorized_keys || {
-    err "Authorized keys is not writable"
-  }
-
 
   trueish "$Build_Docker_Machine" && {
 
     # Copy certificate from docker-machine for TLS connection to docker
 
-    log "Adding docker-machine certificates from '$DOCKER_MACHINE_NAME'"
+    info "Adding docker-machine certificates from '$DOCKER_MACHINE_NAME'"
 
     docker exec -u jenkins -ti $cname bash -c 'mkdir -vp '$chome'/.docker'
     docker exec -u jenkins -ti $cname bash -c 'rm -rf '$chome'/.docker/*.pem'
@@ -73,14 +63,25 @@ trueish "$Run_Reset_Volume" && {
 
   docker exec -u root $cname chown -R jenkins:jenkins $chome/ 2>/dev/null || {
 
-    log "Error chown $chome/: $? (Operation not permitted)"
+    info "Error chown $chome/: $? (Operation not permitted)"
+  }
+
+  #docker exec -u root $cname chown -R jenkins:jenkins $chome/.ssh/ || noop
+
+  info "SSH folder list:"
+  docker exec -u jenkins $cname ls -la $chome/.ssh/
+  docker exec -u jenkins $cname test -w $chome/.ssh/authorized_keys || {
+    error "Authorized keys is not writable"
   }
 
 }
 
+info "image_type=$image_type"
+
 case "$image_type" in
 
   jenkins-server* )
+
 
       trueish "$Run_Reset_Volume" && {
 
@@ -96,11 +97,11 @@ case "$image_type" in
         trueish "$guided_server_setup" && {
 
           trueish "$interactive" || {
-            err "Guided setup requested (jenkins.install.runSetupWizard=true: $JAVA_OPTS)"
-            err "Cannot continue without interactive session" 1
+            error "Guided setup requested (jenkins.install.runSetupWizard=true: $JAVA_OPTS)"
+            error "Cannot continue without interactive session" 1
           }
 
-          log "Guided server setup"
+          info "Guided server setup"
 
           # If no initial user exists, wait for 2.0 automated setup
           docker exec simza-jenkins-server-dev bash -c \
@@ -109,21 +110,21 @@ case "$image_type" in
 
               while true; do
                 docker exec $cname test -s $chome/secrets/initialAdminPassword || {
-                  log "Waiting for file $chome/secrets/initialAdminPassword..."
+                  info "Waiting for file $chome/secrets/initialAdminPassword..."
                   sleep 15
                   continue
                 }
                 break
               done
 
-              log "Enter the following key at the web GUI: "
+              info "Enter the following key at the web GUI: "
               docker exec $cname cat $chome/secrets/initialAdminPassword
               echo
 
-            log "First, continue the online installer and finish admin setup. "
+            info "First, continue the online installer and finish admin setup. "
             clear_env $1
             echo
-            log "Key (copy to user > configure > public keys): "
+            info "Key (copy to user > configure > public keys): "
             #docker exec $cname cat $chome/.ssh/id_?sa.pub
             test -e "$ssh_vol" && {
               cat $ssh_vol/id_?sa.pub
@@ -131,18 +132,18 @@ case "$image_type" in
               cat $DCKR_VOL/ssh/id_?sa.pub
             }
             echo
-            log "Press return to continue"
+            info "Press return to continue"
             read _
           }
 
           get_env $env
 
-          test -n "$api_user" || exit 123
+          test -n "$api_user" || error "No api-user" 29
           sh ./test.sh test-api-user-nonempty
 
           trueish "$interactive" && {
-            log "Do you want to copy the local JJB config to the container for user $api_user,"
-            log "(else generates a new one using the customized init script. )"
+            info "Do you want to copy the local JJB config to the container for user $api_user,"
+            info "(else generates a new one using the customized init script. )"
             read Build_Copy_JJB
           } || noop
 
@@ -153,7 +154,7 @@ case "$image_type" in
             sed -i.bak 's/^user=.*/user='$api_user'/' /tmp/jenkins_jobs.ini
             sed -i.bak 's/^password=.*/password='$api_secret'/' /tmp/jenkins_jobs.ini
             docker cp /tmp/jenkins_jobs.ini $cname:/etc/jenkins_jobs/jenkins_jobs.ini
-            log "Copied local JJB config into container with updated URL"
+            info "Copied local JJB config into container with updated URL"
 
           }  || {
 
@@ -163,53 +164,82 @@ case "$image_type" in
           }
 
           echo
-          #log "Jenkins Job builder config:"
+          #info "Jenkins Job builder config:"
           #echo
           #docker exec -ti $cname cat /etc/jenkins_jobs/jenkins_jobs.ini \
           #  | sed 's/localhost:8080/'$chostname'/'
           #echo
           trueish "$interactive" && {
             echo
-            log "Enter the Press return to continue"
+            info "Enter the Press return to continue"
             read _
           } || noop
 
         } || {
 
+          noop
 
           # 1.* and no-wizard setup
-          log "Automated config.."
+          #info "Automated config.."
 
-
-          export api_user=$Build_Admin_User
-          export api_secret=$Build_Admin_User
-          store_env $env
-          get_env $env
+          #export api_user=$Build_Admin_User
+          #export api_secret=$Build_Admin_User
+          #store_env $env
+          #get_env $env
 
 
           # Wait a bit for HTML UI to load?
-          curl -D - -sf -L -o /dev/null $JENKINS_URL/login || {
-            while true
-            do
-              log "Waiting for HTML UI... ($JENKINS_URL/login)"
-              sleep 15
-              curl -D - -sf -L -o /dev/null $JENKINS_URL/login \
-                && break
-            done
-          }
+          #info "Fetching $JENKINS_URL/login"
+          #curl -D - -sf -L -o /dev/null $JENKINS_URL/login || {
+          #  while true
+          #  do
+          #    info "Waiting for HTML UI... ($JENKINS_URL/login)"
+          #    sleep 15
+          #    curl -D - -sf -L -o /dev/null $JENKINS_URL/login \
+          #      && break
+          #  done
+          #}
         }
 
 
+        # Wait a bit for HTML UI to load?
+        info "Fetching $JENKINS_URL/login"
+        curl -D - -sf -L -o /dev/null $JENKINS_URL/login || {
+          while true
+          do
+            info "Waiting for HTML UI... ($JENKINS_URL/login)"
+            sleep 15
+            curl -D - -sf -L -o /dev/null $JENKINS_URL/login \
+              && break
+          done
+        }
+  
+  
         # Add initial jenkins credential to contact CLI, replace in update.sh
         # using cli grooby.
-
-        #export JENKINS_URL
-        ssh_credentials_id="$(hostname -s)-docker-ssh-key"
-        #echo ssh_credentials_id=$ssh_credentials_id
-
-        log "Creating ~/.ssh/ credentials ID"
-        ./script/sh/create-jenkins-ssh-host-credentials.sh \
-            jenkins "$(hostname) Docker SSH Key" $ssh_credentials_id
+  
+        export JENKINS_URL
+  
+        ssh_credentials_id="${hostname}-docker-ssh-key"
+  
+        # FIXME: also need to add public key to user for initial CLI setup to
+        # work
+        for pubkey in $jenkins_home/.ssh/id_?sa.pub
+        do
+          log "Found pubkey $pubkey"
+          docker exec -ti $cname \
+              /opt/dotmpe/docker-jenkins/init.sh add-user-public-key \
+              jenkins \
+              "$(cat $pubkey)" \
+                && log "Added user public key $pubkey for jenkins" \
+                || err "Failed adding user pubkey $pubkey" 1
+        done
+  
+        #log "Creating ~/.ssh/ credentials ID"
+  
+        #./script/sh/create-jenkins-ssh-host-credentials.sh \
+        #    jenkins "$(hostname) Host SSH Key" $ssh_credentials_id \
+        #    && log "Initial credentials succesfully created"
 
       } || noop
     ;;

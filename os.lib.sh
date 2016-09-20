@@ -1,6 +1,18 @@
 #!/bin/sh
 
 
+# Get basename for each path: [ .EXT ] PATHS...
+basenames()
+{
+  local ext=
+  test -e "$1" || fnmatch ".*" "$1" && { ext=$1; shift; }
+  while test -n "$1"
+  do
+    basename $1 $ext
+    shift
+  done
+}
+
 filesize()
 {
   case "$uname" in
@@ -87,7 +99,7 @@ split_multipath()
       normalize $rel_leaf
     }
   done
-  test -n "$root" || error "No root found" 1
+  test -n "$root" || err "No root found" 1
 }
 
 # Read file filtering octotorphe comments, like this one and empty lines
@@ -106,8 +118,8 @@ read_nix_style_file()
 # Return non-zero if no match was found.
 read_file_lines_while()
 {
-  test -n "$1" || error "Argument expected (1)" 1
-  test -f "$1" || error "Not a filename argument: '$1'" 1
+  test -n "$1" || err "Argument expected (1)" 1
+  test -f "$1" || err "Not a filename argument: '$1'" 1
   test -n "$2" || set -- "$1" 'echo "$line" | grep -qE "^\s*(#.*|\s*)$"'
   line_number=0
   local ln_f=/tmp/script-os-lib-sh-$(uuidgen)

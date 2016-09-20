@@ -3,9 +3,9 @@
 set -e
 
 
-test -n "$api_user" || exit 123
-test -n "$api_secret" || exit 124
-test -n "$JENKINS_URL" || exit 125
+test -n "$api_user" || exit 101
+test -n "$api_secret" || exit 102
+test -n "$JENKINS_URL" || exit 103
 
 
 trigger_build()

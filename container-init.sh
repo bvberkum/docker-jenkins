@@ -4,80 +4,85 @@
 # - Jenkins Job Builder [JJB]
 # - Jenkins CLI client.
 
-# Id: docker-jenkins/0.0.2 init.sh
+# Id: docker-jenkins/0.0.3 container-init.sh
 
 test -n "$hostname" || hostname=$(hostname)
 
 . $(dirname $0)/util.sh
 scriptname=/opt/dotmpe/docker-jenkins/init
 
-SRC_PREFIX=/src/
+test -e "/srv/project-local" && {
+  SRC_PREFIX=/srv/project-local
+} || {
+  SRC_PREFIX=/src/
+}
 
 # Clone and install JJB
 try_install_jjb()
 {
-  test -n "$JJB_HOME" || JJB_HOME=$SRC_PREFIX/jenkins-job-builder
+  test -n "$JJB_SRC_DIR" || JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
   install_jjb
 }
 
 jjb_home()
 {
-  test -n "$JJB_HOME" || JJB_HOME=$SRC_PREFIX/jenkins-job-builder
-  echo $JJB_HOME
+  test -n "$JJB_SRC_DIR" || JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
+  echo $JJB_SRC_DIR
 }
 
 install_jjb()
 {
-  log "Installing JJB and templates.."
+  info "Installing JJB and templates.."
 
-  test -e "$JJB_HOME" || {
-    mkdir -vp $(dirname $JJB_HOME) || err "Failed to created basedir for $JJB_HOME" 1
+  test -e "$JJB_SRC_DIR" || {
+    mkdir -vp $(dirname $JJB_SRC_DIR) || error "Failed to created basedir for $JJB_SRC_DIR" 1
 
-    git clone https://github.com/dotmpe/jenkins-job-builder.git $JJB_HOME \
-      || err "Error cloning to $JJB_HOME" 1
+    git clone https://github.com/dotmpe/jenkins-job-builder.git $JJB_SRC_DIR \
+      || error "Error cloning to $JJB_SRC_DIR" 1
   }
 
-  log "Installing JJB.."
-  pushd $JJB_HOME
+  info "Installing JJB.."
+  pushd $JJB_SRC_DIR
+  git checkout f_pipeline_dsl
   python setup.py -q install \
-    && log "JJB install complete" \
-    || err "Error during JJB installation" 1
+    && info "JJB install complete" \
+    || error "Error during JJB installation" 1
   popd
 
   jenkins-jobs --version && {
-    log "JJB install OK"
+    info "JJB install OK"
   } || {
-    err "JJB installation invalid" 1
+    error "JJB installation invalid" 1
   }
 }
 
 try_install_jtb()
 {
-  test -n "$JTB_HOME" || JTB_HOME=$SRC_PREFIX/jenkins-templated-builds
+  test -n "$JTB_SRC_DIR" || JTB_SRC_DIR=$SRC_PREFIX/jenkins-templated-builds
   install_jtb "$@"
 }
 
 jtb_home()
 {
-  test -n "$JTB_HOME" || JTB_HOME=$SRC_PREFIX/jenkins-templated-builds
-  echo $JTB_HOME
+  test -n "$JTB_SRC_DIR" || JTB_SRC_DIR=$SRC_PREFIX/jenkins-templated-builds
+  echo $JTB_SRC_DIR
 }
 
 install_jtb()
 {
-  test -n "$JTB_HOME" || return 1
-  test -e "$JTB_HOME" || {
-    mkdir -vp $(dirname $JTB_HOME) \
-      || err "Failed to created basedir for $JTB_HOME" 1
-    git clone https://github.com/dotmpe/jenkins-templated-builds.git $JTB_HOME
+  test -n "$JTB_SRC_DIR" || return 1
+  test -e "$JTB_SRC_DIR" || {
+    mkdir -vp $(dirname $JTB_SRC_DIR) \
+      || error "Failed to created basedir for $JTB_SRC_DIR" 1
+    git clone https://github.com/dotmpe/jenkins-templated-builds.git $JTB_SRC_DIR
   }
   case "$1" in
     latest|*-latest|latest-*|*-latest-* )
-      cd $JTB_HOME
+      cd $JTB_SRC_DIR
       ( git checkout master && git pull && make build ) || return $?
       ;;
     * )
-      cd $JTB_HOME
+      cd $JTB_SRC_DIR
       ( git checkout $1 && git pull && make build ) || return $?
       ;;
   esac
@@ -136,9 +141,9 @@ HERE
 
 init_cb_folder()
 {
-  test -n "$1" || err "init_cb_folder: name-id argument expected" 1
-  test -n "$2" || err "init_cb_folder: display-name argument expected" 1
-  test -z "$4" || err "surplus arguments: '$1'" 1
+  test -n "$1" || error "init_cb_folder: name-id argument expected" 1
+  test -n "$2" || error "init_cb_folder: display-name argument expected" 1
+  test -z "$4" || error "surplus arguments: '$1'" 1
   { cat <<EOM
 <?xml version='1.0' encoding='UTF-8'?>
 <com.cloudbees.hudson.plugins.folder.Folder plugin="cloudbees-folder@5.10">
@@ -163,14 +168,14 @@ init_cb_folder()
 EOM
   } > /tmp/create-item-cb-folder.xml
 
-  r=
+  local r=
   ( /usr/local/bin/jenkins-cli \
     create-job $1 || r=$? ) < /tmp/create-item-cb-folder.xml
 
   rm /tmp/create-item-cb-folder.xml
 
   test -z "$r" || {
-    err "Error creating folder '$1' (name: $2), error code: $r"
+    error "Error creating folder '$1' (name: $2), error code: $r"
     exit $r
   }
 }
@@ -178,16 +183,16 @@ EOM
 
 try_install_juc()
 {
-  test -n "$JUC_HOME" || JUC_HOME=/src/jenkins-userContent
+  test -n "$JNK_UC_SRC" || JNK_UC_SRC=$SRC_PREFIX/jenkins-userContent
   install_juc
 }
 
 install_juc()
 {
-  test -n "$JUC_HOME" || return 1
-  test -e "$JUC_HOME" || {
-    mkdir -vp $(dirname $JUC_HOME) || err "Failed to created basedir for $JUC_HOME" 1
-    git clone https://github.com/dotmpe/jenkins-userContent.git $JUC_HOME
+  test -n "$JNK_UC_SRC" || return 1
+  test -e "$JNK_UC_SRC" || {
+    mkdir -vp $(dirname $JNK_UC_SRC) || error "Failed to created basedir for $JNK_UC_SRC" 1
+    git clone https://github.com/dotmpe/jenkins-userContent.git $JNK_UC_SRC
   }
 }
 
@@ -200,14 +205,14 @@ update_plugins()
     | awk '{ print $1 }')
   sleep 2
   test -n "$updates" && {
-    log "Updating plugins: $(echo $updates)"
+    info "Updating plugins: $(echo $updates)"
     jenkins-cli install-plugin $updates && {
       sleep 2
       jenkins-cli safe-restart
     }
     sleep 2
   } || {
-    log "Plugins are up to date"
+    info "Plugins are up to date"
     sleep 1
   }
 }
@@ -224,10 +229,10 @@ wait_for_jenkins_ps()
   while true
   do
     ps aux | grep -v grep | grep -q java.*jar.*jenkins.war >/dev/null && {
-      log "Jenkins is running"
+      info "Jenkins is running"
       return 0
     } || {
-      log "Jenkins not running.. waiting $sleep seconds"
+      info "Jenkins not running.. waiting $sleep seconds"
       sleep $sleep
     }
   done
@@ -242,10 +247,10 @@ wait_for_startup()
     #}
     version=$(jenkins-cli version 2>/dev/null)
     test -z "$version" || {
-      log "Jenkins CLI online"
+      info "Jenkins CLI online"
       return
     }
-    log "Waiting for CLI..."
+    info "Waiting for CLI..."
     sleep $sleep
   done
 }
@@ -258,22 +263,22 @@ customize()
     test -e custom/$x && {
       mkdir -vp war/images/
       cp custom/$x war/images/
-      log "Customized war/images/$x"
+      info "Customized war/images/$x"
     }
   done
 }
 
 init_node()
 {
-  test -n "$1" || err "expected node XML config path name" 1
-  test -e "$1" || err "no such node XML config path: '$1'" 1
+  test -n "$1" || error "expected node XML config path name" 1
+  test -e "$1" || error "no such node XML config path: '$1'" 1
   test -n "$2" || set -- "$1" "$(basename $1 .xml)"
-  test -z "$3" || err "surplus arguments '$3'" 1
+  test -z "$3" || error "surplus arguments '$3'" 1
   jenkins-cli create-node < $1 || {
     sleep 2
-    err "Create '$2' failed, trying update"
+    error "Create '$2' failed, trying update"
     jenkins-cli update-node $2 < $1 \
-      || err "Failed adding node $2" 1
+      || error "Failed adding node $2" 1
   }
   sleep 1
 }
@@ -283,7 +288,7 @@ generate_node()
   local name=$1 file=$2 ; shift 2
   test -n "$file" || file="/tmp/jenkins-nodes/$name.xml"
   test -n "$name" -a -n "$file"
-  test ! -e "$file" || err "Node config file already exists: $file" 1
+  test ! -e "$file" || error "Node config file already exists: $file" 1
   mkdir -vp $(dirname "$file")
 
   test -z "$(echo $@)" || {
@@ -320,24 +325,23 @@ init_view()
   cd $JENKINS_HOME
   jenkins-cli create-view < $JENKINS_HOME/custom/views/$1.xml || {
     sleep 2
-    err "Create '$1' failed, trying update"
+    error "Create '$1' failed, trying update"
     jenkins-cli update-view $1 < $JENKINS_HOME/custom/views/$1.xml \
-      || err "Failed adding custom view $1"
+      || error "Failed adding custom view $1"
   }
-  log "Initialized view '$1'"
+  info "Initialized view '$1'"
   sleep 1
 }
 
 init_jtb_preset()
 {
-  test -n "$JTB_HOME" || err "Need JTB_HOME" 1
-  echo JTB_HOME=$JTB_HOME
-  cd $JTB_HOME
+  test -n "$JTB_SRC_DIR" || error "Need JTB_SRC_DIR" 1
+  cd $JTB_SRC_DIR
   test dist -nt tpl || ./bin/jtb.sh build
   local j=$1
   shift
   eval $@ ./bin/jtb.sh compile-preset $j
-  log "Generated Job ${j}"
+  info "Generated Job ${j}"
 }
 
 reset_login()
@@ -349,11 +353,20 @@ reset_login()
     | jenkins-cli groovy =
 }
 
+add_user_public_key()
+{
+  test -n "$1" || err "Expected user" 1
+  test -n "$2" || err "Expected key" 1
+
+  sed -i.bak 's#<authorizedKeys></authorizedKeys>#<authorizedKeys>'"$2"'</authorizedKeys>#g' \
+    /var/jenkins_home/users/$1/config.xml || return $?
+}
 
 
 # Docker entry-point for container process
 main()
 {
+	scriptname=container-init:$hostname
 	# if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 	if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
 

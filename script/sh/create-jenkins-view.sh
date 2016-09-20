@@ -12,9 +12,9 @@ test -z "$3" || {
   exit 1
 }
 
-test -n "$api_user" || exit 123
-test -n "$api_secret" || exit 124
-test -n "$JENKINS_URL" || exit 125
+test -n "$api_user" || exit 105
+test -n "$api_secret" || exit 106
+test -n "$JENKINS_URL" || exit 107
 
 
 cp $1 config.xml

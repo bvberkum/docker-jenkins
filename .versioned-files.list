@@ -4,6 +4,7 @@ build.sh
 init.sh
 run.sh
 container-init.sh
+install-dependencies.sh
 jenkins-server/Dockerfile
 jenkins-slave/evarga/Dockerfile
 jenkins-slave/evarga/dind/Dockerfile

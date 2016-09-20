@@ -1,6 +1,6 @@
 :Created: 2015-08-30
-:Updated: 2016-06-06
-:Version: 0.0.2
+:Updated: 2016-08-17
+:Version: 0.0.3
 
 Jenkins Server
   - `bvberkum/jenkins-server <//hub.docker.com/r/bvberkum/jenkins-server>`_
@@ -25,7 +25,7 @@ Features
     Use presets values with templates, or fill out placeholders using
     generate, and write new YAML formatted jobs::
 
-      cd $JTB_HOME
+      cd $JTB_SRC_DIR
       ./bin/jtb.sh compile-preset gh-jtb
       jenkins-jobs update gh-jtb.yaml:tpl/base.yaml
 
@@ -52,6 +52,9 @@ can easily be out of date. Script `inits.sh`` has a few pre-configurations.
 
 Dev
 ----
+- `Versions <ChangeLog.rst>`__
+- `Setup guide <doc/setup.rst>`__
+
 Branches
   f_ci_pipeline
     Main dev.
@@ -59,8 +62,6 @@ Branches
     Draft vars.tab
 
 Issues
-  - Seems there is no CLI command to remove/clean plugins.
-    Probably a matter of emptying the directory and reloading.
   - CLI works except with stdin. Taking the JAR out the container does not help.
     Made one built-in function (init_cb_folder) to generate new folders.
 

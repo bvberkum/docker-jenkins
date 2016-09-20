@@ -38,11 +38,11 @@ get_vars()
 
 
 echo
-log "New Local Env: "
+info "New Local Env: "
 set  |  get_vars  |  show_new_env $tmpf | column
 
 echo
-log "New Global Env: "
+info "New Global Env: "
 env  |  get_vars  |  show_new_env $tmpf | column
 
 

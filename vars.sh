@@ -4,9 +4,10 @@ set -e
 type noop >/dev/null 2>&1 || . ./util.sh
 
 
-test -x "$(which docker)" || err "Docker client missing" 1
+test -x "$(which docker)" || error "Docker client missing" 1
 
 test -n "$hostname" || hostname="$(hostname -s | tr 'A-Z.-' 'a-z__')"
+test -n "$verbosity" || export verbosity=6
 
 
 # Require paths to docker volumes
@@ -15,11 +16,11 @@ test ! -e "$DCKR_CONF/$hostname/vars.sh" || {
   . $DCKR_CONF/$hostname/vars.sh
 }
 test -n "$DCKR_VOL" || DCKR_VOL=/Volumes/dckr
-test -e "$DCKR_VOL" || err "Missing docker volumes dir $DCKR_VOL" 1
+# XXX test -e "$DCKR_VOL" || error "Missing docker volumes dir $DCKR_VOL" 1
 
 test -n "$VERBOSE" && {
-  test ! -e "$DCKR_CONF" || echo DCKR_CONF=$DCKR_CONF
-  echo DCKR_VOL=$DCKR_VOL
+  test ! -e "$DCKR_CONF" || info DCKR_CONF=$DCKR_CONF
+  info DCKR_VOL=$DCKR_VOL
 }
 
 
@@ -30,12 +31,13 @@ test -n "$1" && { tag="$1"; incr_c; shift 1; } || test -n "$tag" || tag=latest
 test -n "$vendor" || vendor=dotmpe
 test -n "$dckrfile_dir" || dckrfile_dir=jenkins-server
 test -n "$dckrfile" || dckrfile="$dckrfile_dir/Dockerfile"
+test -n "$dckr_run_f" || dckr_run_f="-d"
 test -n "$image_type" || image_type=$(echo $dckrfile_dir | tr '/' '-')
 test -n "$shostname" || shostname=$image_type
 test -n "$image_ref" || image_ref=$vendor/$image_type:$tag
 test -n "$env_vars_file" || env_vars_file=.env-$env.sh
-test -n "$env" || err "No env given" 1
-test -n "$tag" || err "No tag given" 1
+test -n "$env" || error "No env given" 1
+test -n "$tag" || error "No tag given" 1
 
 case "$image_type" in
 
@@ -48,14 +50,18 @@ case "$image_type" in
     trueish "$interactive" || {
       test -n "$Build_Copy_JJB" || Build_Copy_JJB=0
       trueish "$guided_server_setup" \
-        && err "Cannot do interactive setup without console"
+        && error "Cannot do interactive setup without console"
     }
   ;;
 esac
 
 # Default build options
 test -n "$Build_Image" || Build_Image=1
-test plugins.txt -nt plugins_default.txt || Recompile_Plugins=1
+test plugins.txt -nt plugins_default.txt || {
+  test -x "$(which jsotk.py)" \
+    && Recompile_Plugins=1 \
+    || warn "Cannot update plugins.txt"
+}
 test -n "$Build_Offline" || Build_Offline=0
 trueish "$Build_Offline" && {
   test -n "$Update_Packages" || Update_Packages=0
@@ -92,19 +98,19 @@ test -n "$Build_URL_Include_Port" || Build_URL_Include_Port=1
 test -n "$(which docker-machine)" -a -x "$(which docker-machine)" && {
   test -n "$DOCKER_MACHINE_NAME" && {
     test "$env" = "$DOCKER_MACHINE_NAME" \
-      || err "Current docker-machine is '$DOCKER_MACHINE_NAME', not '$env'" 1
+      || error "Current docker-machine is '$DOCKER_MACHINE_NAME', not '$env'" 1
     Build_Docker_Machine=1
   } || {
 
     docker-machine ls | grep -q '\<'$env'\>' && {
       eval $(docker-machine env $env)
       env | grep DOCK
-      log "Using docker-machine '$env'"
+      info "Using docker-machine '$env'"
       Build_Docker_Machine=1
     } || noop
   }
 } || {
-  log "No docker-machine, proceeding with current docker client assuming env is $env"
+  note "No docker-machine, proceeding with current docker client assuming env is $env"
 }
 
 
@@ -164,14 +170,20 @@ esac
 case "$env" in
   # Expose port for easy inspection
   dev )
-    DOTMPE_SLAVE_PORT=2005
-    DOTMPE_SLAVE_DIND_PORT=2003
+      DOTMPE_SLAVE_PORT=2005
+      DOTMPE_SLAVE_DIND_PORT=2003
     ;;
   acc )
-    DOTMPE_SLAVE_PORT=2006
-    DOTMPE_SLAVE_DIND_PORT=2004
+      DOTMPE_SLAVE_PORT=2006
+      DOTMPE_SLAVE_DIND_PORT=2004
     ;;
-  * ) DOTMPE_SLAVE_PORT=22 ;;
+  prod )
+      DOTMPE_SLAVE_PORT=2001
+      DOTMPE_SLAVE_DIND_PORT=2002
+    ;;
+  * )
+      #DOTMPE_SLAVE_PORT=22
+    ;;
 esac
 
 
@@ -187,8 +199,8 @@ case "$image_type" in
       case "$env" in
 
         dev )
-            test -z "$JJB_HOME" || dckr_run_f="$dckr_run_f -v $JJB_HOME:/src/jenkins-job-builder:rw"
-            test -z "$JTB_HOME" || dckr_run_f="$dckr_run_f -v $JTB_HOME:/src/jenkins-templated-builds:rw"
+            test -z "$JJB_SRC_DIR" || dckr_run_f="$dckr_run_f -v $JJB_SRC_DIR:/srv/project-local/jenkins-job-builder:rw"
+            test -z "$JTB_SRC_DIR" || dckr_run_f="$dckr_run_f -v $JTB_SRC_DIR:/srv/project-local/jenkins-templated-builds:rw"
           ;;
 
       esac
@@ -216,41 +228,51 @@ case "$image_type" in
         # TODO: deal with reverse proxy (maps frontend 80 to 8080 backend)
         web_port=8080
         ext_web_port=80
-
       }
 
+
+      info "DCKR_HOST=$DCKR_HOST"
+
       test -n "$JENKINS_URL" || {
-        # Use DOCKER_HOST IP to reverse Jenkins HTTP URL
-        test -n "$DOCKER_HOST" && {
+
+        # Use DCKR_HOST IP to reverse Jenkins HTTP URL
+        test -n "$DCKR_HOST" && {
           # cut up tcp url
-          JENKINS_URL=http$(echo ${DOCKER_HOST:3} | sed 's/\:2376.*//')
+          fnmatch "tcp:*" $DCKR_HOST && {
+            JENKINS_URL=http$(echo ${DCKR_HOST:3} | sed 's/\:2376.*//')
+          } || {
+          JENKINS_URL=http://$DCKR_HOST
+          }
         } || {
           JENKINS_URL=http://$chostname
         }
+
         trueish "$Build_URL_Include_Port" && {
           JENKINS_URL=$JENKINS_URL:$web_port
         }
+
+        export JENKINS_URL
+
+        info "JENKINS_URL=$JENKINS_URL"
       }
 
       echo "# Generated at by $0 at $(date)" > $env_vars_file
 
-      echo JTB_HOME=/src/jenkins-templated-builds >> $env_vars_file
-      echo JJB_HOME=/src/jenkins-job-builder >> $env_vars_file
-      echo JUC_HOME=/src/jenkins-userContent >> $env_vars_file
+      echo JTB_SRC_DIR=/srv/project-local/jenkins-templated-builds >> $env_vars_file
+      echo JJB_SRC_DIR=/srv/project-local/jenkins-job-builder >> $env_vars_file
+      #echo JNK_UC_SRC=/srv/project-local/jenkins-userContent >> $env_vars_file
 
-      dckr_run_f="$dckr_run_f -v $jenkins_home:$chome:rw"
+      #dckr_run_f="$dckr_run_f -v $jenkins_home:$chome:rw"
+      dckr_run_f="$dckr_run_f -v jenkins:$chome:rw"
     ;;
 
 
   jenkins-slave*dind* )
 
-      case "$env" in
-        acc ) dckr_run_f="$dckr_run_f -p 2004:22";;
-        dev ) dckr_run_f="$dckr_run_f -p 2003:22";;
-      esac
+      dckr_run_f="$dckr_run_f -p $DOTMPE_SLAVE_DIND_PORT:22"
 
       chome=/home/jenkins
-      dckr_run_f="$dckr_run_f -v $jenkins_home:$chome/workspace:rw"
+      #dckr_run_f="$dckr_run_f -v $jenkins_home:$chome/workspace:rw"
     ;;
 
 
@@ -259,33 +281,28 @@ case "$image_type" in
       dckr_run_f="$dckr_run_f -p $DOTMPE_SLAVE_PORT:22"
 
       chome=/home/jenkins
-      dckr_run_f="$dckr_run_f -v $jenkins_home:$chome/workspace:rw"
+      #dckr_run_f="$dckr_run_f -v $jenkins_home:$chome/workspace:rw"
     ;;
 
 
   jenkins-slave* )
 
-      case "$env" in
-        acc ) dckr_run_f="$dckr_run_f -p 2002:22";;
-        dev ) dckr_run_f="$dckr_run_f -p 2001:22";;
-      esac
-
       chome=/home/jenkins/
-      dckr_run_f="$dckr_run_f -v $jenkins_home:$chome/workspace:rw"
+      #dckr_run_f="$dckr_run_f -v $jenkins_home:$chome/workspace:rw"
     ;;
 
 esac
 
 
-test -n "$ssh_vol" || ssh_vol=$DCKR_VOL/config/$cname.ssh
-test -e "$ssh_vol" && {
-  #log "Adding SSH volume $ssh_vol"
-  test -n "$chome" \
-    ||  err "Container Homedir must be know to mount SSH volume" 1
-  dckr_run_f="$dckr_run_f -v $ssh_vol:$chome/.ssh"
-} || {
-  err "No SSH volume continueing without ($ssh_vol)"
-}
+#test -n "$ssh_vol" || ssh_vol=$DCKR_VOL/config/$cname.ssh
+#test -e "$ssh_vol" && {
+#  #log "Adding SSH volume $ssh_vol"
+#  test -n "$chome" \
+#    ||  error "Container Homedir must be know to mount SSH volume" 1
+#  dckr_run_f="$dckr_run_f -v $ssh_vol:$chome/.ssh"
+#} || {
+#  error "No SSH volume ($ssh_vol)"
+#}
 
 
 ## Privileged run
@@ -310,11 +327,10 @@ trueish "$Build_Export_Ports" && {
 
 # Experimenting with build tags to configure dependencies
 #dckr_build_f="$dckr_build_f --build-arg build_tag=$tag --build-arg build_meta=$env"
-#test ! -e $env_vars_file || {
-#  build_args=$(cat $env_vars_file | grep -v '^#' | \
-#      sed 's/.*/--build-arg\ &/g')
-#}
-#echo build_args=$build_args
+test ! -e $env_vars_file || {
+  build_args=$(cat $env_vars_file | grep -v '^#' | \
+      sed 's/.*/--build-arg\ &/g')
+}
 
 test ! -e env.sh \
   || . ./env.sh
@@ -325,15 +341,22 @@ test -e "$image_type/vars.sh" && {
   . $image_type/vars.sh
 }
 
+
+which jenkins-jobs >/dev/null 2>&1 && {
+  log "Found jenkins-job-builder installed at $hostname: $(jenkins-jobs --version)"
+} || {
+  err "No jenkins-job-builder installation, will not be able to update JJB etc. from local host."
+}
+
 echo
 echo '------------------------------------------------------------------------'
 echo
-echo "[$scriptname] Docker $(docker info | grep Version:)"
-echo "[$scriptname] Docker Env $(docker info | grep Name:)"
-echo "[$scriptname] Build Env: $env"
-echo "[$scriptname] Image ID: $image_ref"
-echo "[$scriptname] Build Tag: $tag"
-echo "[$scriptname] Container name/host/http: $cname, $chostname, $web_port"
+info "Docker $(docker info | grep Version:)"
+info "Docker Env $(docker info | grep Name:)"
+info "Build Env: $env"
+info "Image ID: $image_ref"
+info "Build Tag: $tag"
+info "Container name/host/http: $cname, $chostname, $web_port"
 echo
 echo '------------------------------------------------------------------------'
 

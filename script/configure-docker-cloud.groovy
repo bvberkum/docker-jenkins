@@ -32,7 +32,7 @@ if ( Swarm_Master_URL == null ) {
 }
 
 if ( Swarm_Master_URL == null ) {
-  Swarm_Master_URL = System.getenv("DOCKER_HOST")
+  Swarm_Master_URL = System.getenv("DCKR_HOST")
   if ( Swarm_Master_URL != null ) {
     Swarm_Master_URL = Swarm_Master_URL.replace('tcp:', 'https:')
   }
@@ -98,6 +98,7 @@ docker_settings.each { cloud ->
           new DockerTemplateBase(
              template.image,
              template.dnsString,
+             template.network,
              template.dockerCommand,
              template.volumesString,
              template.volumesFromString,

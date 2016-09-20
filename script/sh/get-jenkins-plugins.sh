@@ -105,10 +105,10 @@ recompile_plugins()
   do
     echo "Fetch deps for $(wc -l $2.cur | awk '{print $1}') plugins"
     cat $2.cur | list_deps | grep -vFf $2 | sort -du > $2.new
-    test ! -s $2.tmp || {
+    test ! -s $2.new || {
       # FIXME: jsotk objectpython depends on pytz, and has a dirty warning on
       # stdout about it
-      grep -vq '^are$' $2.tmp || {
+      grep -vq '^are$' $2.new || {
         echo "Please install pytz: pip install pytz"
         exit 1
       }

@@ -6,7 +6,7 @@ test -n "$scriptname" || scriptname=jenkins-jobs
 
 . ./util.sh
 
-#cmd='jenkins-jobs update $JTB_HOME/jjb-install-local.yaml:$JTB_HOME/dist/base.yaml'
+#cmd='jenkins-jobs update $JTB_SRC_DIR/jjb-install-local.yaml:$JTB_SRC_DIR/dist/base.yaml'
 cmd="'jenkins-jobs $@'"
 echo cmd=$cmd
 docker exec -ti $cname \

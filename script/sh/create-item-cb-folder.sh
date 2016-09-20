@@ -38,48 +38,73 @@ test -z "$dirname" -o "$dirname" = "." && {
 log "Creating CloudBees Job Folder: '$DISPLAY_NAME' ($ID)"
 log "at server $JENKINS_URL/$parent_base"
 
-curlflags="-fsL"
-#debug_f="-D -"
+curlflags="-fsSL"
+test -n "$DEBUG" || {
+   curlflags="$curlflags -D -"
+}
+       
+r=
+#create_item_retries=3
+#while test $create_item_retries -gt 0
+#do
 
-case "$tag" in
+  case "$tag" in
+  
+    1.* )
+  
+        curl -X post $curlflags \
+            -o /tmp/$scriptname-1-$(uuidgen).curlout \
+            -d name="$(basename "$ID")" \
+            -d mode="com.cloudbees.hudson.plugins.folder.Folder" \
+            $JENKINS_URL/${parent_base}createItem \
+              || err "Create folder $ID ($DISPLAY_NAME): cURL returned error $?" $?
+  
+        log "Job item created, updating display name"
+  
+  
+        log "Updating CloudBees Job Folder: '$DISPLAY_NAME' ($ID)"
+        log "at server $JENKINS_URL/$base"
+  
+        curl -X post $curlflags \
+            -o /tmp/$scriptname-2-$(uuidgen).curlout \
+            -d json='{ "name": "'$(basename "$ID")'", "displayNameOrNull": "'"$DISPLAY_NAME"'", "description": "", "": ["0", "0"], "viewsTabBar": {"stapler-class": "hudson.views.DefaultViewsTabBar", "$class": "hudson.views.DefaultViewsTabBar"}, "icon": {"stapler-class": "com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon", "$class": "com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon"}, "healthMetrics": {"stapler-class": "com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric", "$class": "com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric"}, "com-cloudbees-hudson-plugins-folder-properties-FolderCredentialsProvider$FolderCredentialsProperty": {"domainCredentials": {"domain": {"name": "", "description": ""}}}, "core:apply": ""} ' \
+            "$JENKINS_URL/${base}configSubmit" \
+              && log "Job Folder $ID ready at <$JENKINS_URL/job/$ID>" \
+              || {
+                r=$?
+#                err "Updated folder $ID ($DISPLAY_NAME): cURL returned error $r"
+              }
+  
+  
+      ;;
+  
+    2.* )
+  
+        # Note: 2.0 gets auth setup, maybe can get a login. Or seem to need a
+        # Jenkins-Crumb value perhaps to post.
+        # Also, stdin is not working on the docker-exec jenkins-cli bridge.
+        # So moved script into container.
+  
+        docker exec $cname \
+          /opt/dotmpe/docker-jenkins/init.sh init_cb_folder "$ID" \
+            "$DISPLAY_NAME" "$DESCRIPTION" \
+            || {
+              r=$?
+              create_item_retries=$(( $create_item_retries - 1 ))
+#              err "Updated folder $ID ($DISPLAY_NAME): cURL returned error $r"
+            }
 
-  1.* )
+  
+      ;;
+  
+  esac
 
-      curl -X post $curlflags \
-          -o /tmp/$scriptname-1-$(uuidgen).curlout \
-          -d name="$(basename "$ID")" \
-          -d mode="com.cloudbees.hudson.plugins.folder.Folder" \
-          $JENKINS_URL/${parent_base}createItem \
-          || err "Create folder $ID ($DISPLAY_NAME): cURL returned error $?" $?
+#  err "Create folder item failed, $create_item_retries retries left.."
 
-      log "Job item created, updating display name"
+#done
 
+test -n "$r" || {
+  err "Failed creating $ID ($DISPLAY_NAME) '$*'"
+  #exit 1
+}
 
-      log "Updating CloudBees Job Folder: '$DISPLAY_NAME' ($ID)"
-      log "at server $JENKINS_URL/$base"
-
-      curl -X post $curlflags \
-          -o /tmp/$scriptname-2-$(uuidgen).curlout \
-          -d json='{ "name": "'$(basename "$ID")'", "displayNameOrNull": "'"$DISPLAY_NAME"'", "description": "", "": ["0", "0"], "viewsTabBar": {"stapler-class": "hudson.views.DefaultViewsTabBar", "$class": "hudson.views.DefaultViewsTabBar"}, "icon": {"stapler-class": "com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon", "$class": "com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon"}, "healthMetrics": {"stapler-class": "com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric", "$class": "com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric"}, "com-cloudbees-hudson-plugins-folder-properties-FolderCredentialsProvider$FolderCredentialsProperty": {"domainCredentials": {"domain": {"name": "", "description": ""}}}, "core:apply": ""} ' \
-          "$JENKINS_URL/${base}configSubmit" \
-            || err "Updated folder $ID ($DISPLAY_NAME): cURL returned error $?" $?
-
-      log "Job Folder $ID ready at <$JENKINS_URL/job/$ID>"
-
-    ;;
-
-  2.* )
-
-      # Note: 2.0 gets auth setup, maybe can get a login. Or seem to need a
-      # Jenkins-Crumb value perhaps to post.
-      # Also, stdin is not working on the docker-exec jenkins-cli bridge.
-      # So moved script into container.
-
-      docker exec $cname \
-        /opt/dotmpe/docker-jenkins/init.sh init_cb_folder "$ID" \
-          "$DISPLAY_NAME" "$DESCRIPTION" \
-          || exit $?
-
-    ;;
-
-esac

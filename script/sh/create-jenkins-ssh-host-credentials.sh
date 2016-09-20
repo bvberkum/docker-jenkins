@@ -10,9 +10,9 @@ test -z "$4" || {
   exit 1
 }
 
-test -n "$api_user" || exit 123
-test -n "$api_secret" || exit 124
-test -n "$JENKINS_URL" || exit 125
+test -n "$api_user" || exit 95
+test -n "$api_secret" || exit 96
+test -n "$JENKINS_URL" || exit 97
 
 
 curl -fsS -o /dev/null \
@@ -23,29 +23,31 @@ curl -fsS -o /dev/null \
 
 } || {
 
-
-curl -fSs \
-  -XPOST -o /dev/null \
-  --user $api_user:$api_secret \
-  -F json='{
-      "": "2",
-      "credentials": {
-        "scope": "GLOBAL",
-        "username": "'"$1"'",
-        "privateKeySource": {
-          "value": "2",
-          "stapler-class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey$UsersPrivateKeySource"
+  curl -fSs \
+    -XPOST -o /dev/null \
+    --user $api_user:$api_secret \
+    -F json='{
+        "": "2",
+        "credentials": {
+          "scope": "GLOBAL",
+          "username": "'"$1"'",
+          "privateKeySource": {
+            "value": "2",
+            "stapler-class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey$UsersPrivateKeySource"
+          },
+          "passphrase": "",
+          "description": "'"$2"'",
+          "id": "'"$3"'",
+          "stapler-class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey",
+          "$class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey"
         },
-        "passphrase": "",
-        "description": "'"$2"'",
-        "id": "'"$3"'",
-        "stapler-class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey",
-        "$class": "com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey"
-      },
-    }' \
-  \
-  $JENKINS_URL/credentials/store/system/domain/_/createCredentials \
-    && echo "Credentials $3 created" \
-    || echo "Failed setting credentials"
+      }' \
+    \
+    $JENKINS_URL/credentials/store/system/domain/_/createCredentials \
+      && echo "Credentials $3 created" \
+      || {
+        echo "Failed creating credentials '$3'"
+        exit 1
+      }
 }
 
