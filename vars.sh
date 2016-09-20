@@ -6,7 +6,20 @@ type noop >/dev/null 2>&1 || . ./util.sh
 
 test -x "$(which docker)" || error "Docker client missing" 1
 
-test -n "$hostname" || hostname="$(hostname -s | tr 'A-Z.-' 'a-z__')"
+test -n "$hostname" || {
+  case "$(hostname -s)" in
+    [\ 0-9][\ 0-9][0-9] )
+        hostname="$(hostname | tr 'A-Z.-' 'a-z__')"
+      ;;
+    [0-9]* )
+        echo errorrrrrrrrr
+        exit 221
+      ;;
+    * )
+        hostname="$(hostname -s | tr 'A-Z.-' 'a-z__')"
+      ;;
+  esac
+}
 test -n "$verbosity" || export verbosity=6
 
 
