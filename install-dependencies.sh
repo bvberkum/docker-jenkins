@@ -20,6 +20,9 @@ test -z "$Build_Deps_Default_Paths" || {
 }
 
 test -n "$sudo" || sudo=
+test -z "$sudo" || pref="sudo $pref"
+test -z "$dry_run" || pref="echo $pref"
+
 
 test -n "$SRC_PREFIX" || {
   echo "Not sure where checkout"
