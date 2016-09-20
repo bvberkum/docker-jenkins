@@ -29,10 +29,10 @@
     - choice:
         name: Build_Tag
         choices:
-        - "dev"
+        - "build"
         - "latest"
         - "auto"
-        - "build"
+        - "dev"
 
     - bool:
         name: Rebuild
