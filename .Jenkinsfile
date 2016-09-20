@@ -1,19 +1,26 @@
 
-stage 'Prerun'
-
 if (!Build_Version) {
   Build_Version = '2.0'
 }
 if (!Build_Tag) {
-  Build_Tag = 'auto'
+  Build_Tag = 'dev'
 }
 
+// Ask for Docker-in-Docker or other Docker host Jenkins slave
 println "Waiting for node 'dind || docker-host'"
 
 node("dind || docker-host") {
 
+
   stage 'Checkout'
-  checkout scm
+  
+  String checkout_dir="../workspace@script"
+  if (fileExists(checkout_dir)) {
+    dir checkout_dir
+  } else {
+    checkout scm
+  }
+
 
   stage 'Build'
 
@@ -24,15 +31,18 @@ node("dind || docker-host") {
   env.Build_Only = 1
   env.DCKR_VOL = pwd tmp: true
 
-  sh 'echo $env'
+  sh 'echo env=$env'
   sh 'test -n "$env"'
 
   sh """#!/bin/bash
 
-  # TODO: ./inits.sh server-mpe
-  ./inits.sh slave-mpe
-  ./inits.sh slave-mpe-dind
+  ./inits.sh server
+  ./inits.sh slave
+  ./inits.sh slave-dind
   """
+
+
+
 }
 
 

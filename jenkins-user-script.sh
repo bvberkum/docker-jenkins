@@ -1,17 +1,17 @@
 
 set -e
 
-scriptname="$(basename "$0")"
-type err >/dev/null 2>&1 || { . ./util.sh; }
+scriptname="$(basename "$0" .sh)"
+type noop >/dev/null 2>&1 || { . ./util.sh; }
 
-cmd="$1"
+subcmd="$1"
 shift
 
 
-info "'$@'"
+debug "'$*'"
 
 
-case "$cmd" in
+case "$subcmd" in
 
   git-versioning-install )
     $0 docker-exec-ti \
@@ -60,6 +60,11 @@ case "$cmd" in
       'test -n "$JTB_SRC_DIR" && test -e "$JTB_SRC_DIR" && cd $JTB_SRC_DIR && git show-ref && git status ; exit' \
         || exit $? ;;
 
+  jtb_update )
+    $0 docker-exec \
+      'cd $JTB_SRC_DIR && git pull && make dist'\
+        || exit $? ;;
+
   compile_jtb_preset )
     $0 docker-exec \
       'cd $JTB_SRC_DIR; mkdir -vp dist; test dist -nt tpl || ./jtb-process.sh tpl dist ;'\
@@ -67,18 +72,25 @@ case "$cmd" in
         || exit $? ;;
 
   reconfigure_jtb_job )
-    test -n "$1" || exit 209
+    test -n "$1" && note "reconfigure-jtb-job '$1'" || error "Missing file '$1'" 209
+    test -z "$DEBUG" || jb_f="-l debug"
     $0 docker-exec \
-      'test -e "'$1'" && cd $JTB_SRC_DIR && jenkins-jobs update '"$1"':$JTB_SRC_DIR/dist/base.yaml || { echo "Missing '$1'"; exit 1; }' \
+      'cd $JTB_SRC_DIR ; test -e "'$1'" || { echo "Missing '$1'"; exit 1; }; jenkins-jobs $jb_f update '"$1"':$JTB_SRC_DIR/dist/base.yaml' \
         || exit $? ;;
 
+    # TODO: test
   reconfigure_jtb_preset )
-    $0 reconfigure_jtb_job '$JTB_SRC_DIR/preset/'"$1"'.yaml' \
-        || exit $? ;;
+        $0 reconfigure_jtb_job '$JTB_SRC_DIR/preset/'"$1"'.yaml' \
+          || exit $? ;;
 
+  # TODO: test
   reconfigure_jtb_update_existing_projects )
-    $0 reconfigure_jtb_job '$JTB_SRC_DIR/example/update-existing-projects.yaml' \
-        || exit $? ;;
+        $0 reconfigure_jtb_job '$JTB_SRC_DIR/example/update-existing-projects.yaml' \
+          || exit $? ;;
+
+  generate_job ) # Args: JOB_TYPE  NAME_ARG  PARAMS
+        . ./script/sh/create-jenkins-jobs.sh
+        generate_job "$@" ;;
 
   reconfigure_juc )
 
@@ -106,7 +118,7 @@ case "$cmd" in
     ;;
 
   * )
-      error "No sub-command '$cmd'" 14
+      error "No sub-command '$subcmd'" 14
     ;;
 
 esac

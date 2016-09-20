@@ -22,9 +22,6 @@ case "$hostname" in
 
       ##export DCKR_VOL=/srv/docker-local
 
-      export Build_URL_Include_Port=1
-      export Run_Init_Keys=1
-
       #export DCKR_HOST=localhost
       # Need private_network with IP assigned
       export DCKR_HOST="$(ifconfig eth1 | grep 'inet\>' | sed 's/.*addr:\([^\ ]*\).*$/\1/')"
@@ -60,7 +57,6 @@ case "$hostname" in
       export Build_Chown=jenkins:staff
       export chostname=localhost
       export Build_URL_Include_Port=1
-      export Run_Init_Keys=1
       #export JENKINS_URL=https://localhost:8007
 
       api_user=jenkins
@@ -89,7 +85,6 @@ case "$hostname" in
       VERBOSE=1
       export DCKR_VOL=$(pwd)/volumes
       export DCKR_CONF=$(pwd)/config
-      export ssh_vol=$DCKR_CONF/dckr-test-jenkins-server.ssh/
       mkdir -vp $DCKR_VOL
       export Build_Chown=jenkins:staff
       export hostname=dckr-test

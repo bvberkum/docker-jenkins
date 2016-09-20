@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <hudson.model.ListView>
-  <name>list</name>
+  <name>Weather</name>
   <filterExecutors>false</filterExecutors>
   <filterQueue>false</filterQueue>
   <properties class="hudson.model.View$PropertyList"/>
@@ -16,6 +16,7 @@
     <hudson.views.LastFailureColumn/>
     <hudson.views.LastDurationColumn/>
     <hudson.views.BuildButtonColumn/>
+    <jenkins.plugins.extracolumns.LastBuildConsoleColumn plugin="extra-columns@1.17"/>
   </columns>
   <includeRegex>.*</includeRegex>
   <recurse>true</recurse>

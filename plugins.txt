@@ -29,6 +29,7 @@ dashboard-view
 description-setter
 discard-old-build
 disk-usage
+display-url-api
 distfork
 docker-build-step
 docker-commons
@@ -75,6 +76,7 @@ multi-branch-project-plugin
 multiple-scms
 parameterized-trigger
 pipeline-build-step
+pipeline-graph-analysis
 pipeline-input-step
 pipeline-rest-api
 pipeline-stage-step
@@ -93,11 +95,11 @@ scm-api
 scriptler
 script-security
 shelve-project-plugin
+shiningpanda
 show-build-parameters
 sidebar-link
 simple-parameterized-builds-report
 simple-theme-plugin
-simple-travis-runner
 ssh-credentials
 ssh-slaves
 structs

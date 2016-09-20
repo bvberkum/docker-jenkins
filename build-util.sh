@@ -10,9 +10,10 @@ test -n "$ssh_credentials_id" || error "SSH credential ID expected" 1
 
 get_env()
 {
-  test -n "$env"
+  test -n "$env" && log "get-env $env" || err "Missing env name" 1
   test -n "$1" || set -- $env
   test -s ".env-api-$1.sh" || {
+    log "Missing .env-api-$1.sh file.."
     log "Enter a new username? (default: jenkins)"
     read confirm
 
@@ -32,7 +33,7 @@ get_env()
 
 store_env()
 {
-  test -n "$env"
+  test -n "$env" || err store-env 1
   test -n "$1" || set -- $env
   {
     echo api_user=$api_user
@@ -48,21 +49,21 @@ store_env()
 
 clear_env()
 {
-  test -n "$env"
+  test -n "$env" && log "clear-env $env" || err clear-env 1
   test -n "$1" || set -- $env
   test ! -e .env-api-$1.sh || rm -rf .env-api-$1.sh
 }
 
 file_for_env()
 {
-  test -n "$env"
+  test -n "$env" || err file-for-env 1
   test -n "$1" || set -- $env
   echo .env-api-$1.sh
 }
 
 show_env()
 {
-  test -n "$env"
+  test -n "$env" || err show-env 1
   test -n "$1" || set -- $env
   cat .env-api-$1.sh
 }

@@ -60,4 +60,4 @@ test "$(basename $0)" = "install-dependencies.sh" && {
   done
 } || printf ""
 
-# Id: docker-jenkins/0.0.3
+# Id: docker-jenkins/0.0.4-dev

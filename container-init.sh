@@ -4,12 +4,11 @@
 # - Jenkins Job Builder [JJB]
 # - Jenkins CLI client.
 
-# Id: docker-jenkins/0.0.3 container-init.sh
+# Id: docker-jenkins/0.0.4-dev container-init.sh
 
 test -n "$hostname" || hostname=$(hostname)
 
 . $(dirname $0)/util.sh
-scriptname=/opt/dotmpe/docker-jenkins/init
 
 test -e "/srv/project-local" && {
   SRC_PREFIX=/srv/project-local
@@ -21,7 +20,7 @@ test -e "/srv/project-local" && {
 try_install_jjb()
 {
   test -n "$JJB_SRC_DIR" || JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
-  install_jjb
+  install_jjb "$@"
 }
 
 jjb_home()
@@ -42,12 +41,16 @@ install_jjb()
   }
 
   info "Installing JJB.."
-  pushd $JJB_SRC_DIR
-  git checkout f_pipeline_dsl
-  python setup.py -q install \
+  cd $JJB_SRC_DIR
+  test -z "$1" || {
+    git checkout $1 || error "Cannot checkout $1" 1
+  }
+  git pull
+
+  pip install -r requirements.txt -e . \
     && info "JJB install complete" \
     || error "Error during JJB installation" 1
-  popd
+  cd
 
   jenkins-jobs --version && {
     info "JJB install OK"
@@ -71,21 +74,21 @@ jtb_home()
 install_jtb()
 {
   test -n "$JTB_SRC_DIR" || return 1
+  info "Installing Jenkins Templated Builds"
+
   test -e "$JTB_SRC_DIR" || {
     mkdir -vp $(dirname $JTB_SRC_DIR) \
       || error "Failed to created basedir for $JTB_SRC_DIR" 1
     git clone https://github.com/dotmpe/jenkins-templated-builds.git $JTB_SRC_DIR
   }
-  case "$1" in
-    latest|*-latest|latest-*|*-latest-* )
-      cd $JTB_SRC_DIR
-      ( git checkout master && git pull && make build ) || return $?
-      ;;
-    * )
-      cd $JTB_SRC_DIR
-      ( git checkout $1 && git pull && make build ) || return $?
-      ;;
-  esac
+
+  cd $JTB_SRC_DIR
+  test -z "$1" || {
+    git checkout $1 || error "Cannot checkout $1" 1
+  }
+  git pull
+
+  make build
 }
 
 # Configure JJB
@@ -168,16 +171,15 @@ init_cb_folder()
 EOM
   } > /tmp/create-item-cb-folder.xml
 
-  local r=
-  ( /usr/local/bin/jenkins-cli \
-    create-job $1 || r=$? ) < /tmp/create-item-cb-folder.xml
+  ( /usr/local/bin/jenkins-cli create-job $1 || {
+      r=$?
+      rm /tmp/create-item-cb-folder.xml
+      error "Error creating folder '$1' (name: $2)"
+      exit $r
+    }
+  ) < /tmp/create-item-cb-folder.xml
 
   rm /tmp/create-item-cb-folder.xml
-
-  test -z "$r" || {
-    error "Error creating folder '$1' (name: $2), error code: $r"
-    exit $r
-  }
 }
 
 
@@ -366,7 +368,7 @@ add_user_public_key()
 # Docker entry-point for container process
 main()
 {
-	scriptname=container-init:$hostname
+	scriptname="container-init:$hostname"
 	# if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 	if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
 

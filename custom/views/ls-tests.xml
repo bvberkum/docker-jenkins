@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <listView>
   <owner class="hudson" reference="../../.."/>
-  <name>ls</name>
+  <name>Tests</name>
   <filterExecutors>false</filterExecutors>
   <filterQueue>false</filterQueue>
   <properties class="hudson.model.View$PropertyList"/>
@@ -11,11 +11,7 @@
   <jobFilters/>
   <columns>
     <hudson.views.StatusColumn/>
-    <hudson.views.WeatherColumn/>
     <hudson.views.JobColumn/>
-    <hudson.views.LastSuccessColumn/>
-    <hudson.views.LastFailureColumn/>
-    <hudson.views.LastDurationColumn/>
     <jenkins.plugins.extracolumns.TestResultColumn plugin="extra-columns@1.17">
       <testResultFormat>1</testResultFormat>
     </jenkins.plugins.extracolumns.TestResultColumn>

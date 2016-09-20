@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Id: docker-jenkins/0.0.3 build.sh
+# Id: docker-jenkins/0.0.4-dev build.sh
 
 scriptname=build
 
@@ -39,7 +39,7 @@ case "$image_type" in
 
       sed -i.bak 's/FROM jenkins:.*/FROM jenkins:'$tag'/' $dckrfile
 
-      trueish "$guided_server_setup" \
+      trueish "$Config_Wizard" \
         || dckr_build_f=" --build-arg jenkins_install_wizard=false "
 
     ;;
@@ -65,5 +65,6 @@ docker build $dckr_build_f \
     }
 
 
-# XXX: git checkout $dckrfile
+git checkout -f $dckrfile
+rm -f $dckrfile.bak
 

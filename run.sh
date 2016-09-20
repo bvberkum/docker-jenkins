@@ -3,7 +3,7 @@
 # Start fresh jenkins-mpe container with name, destroying previous instance with
 # name.
 
-# Id: docker-jenkins/0.0.3 run.sh
+# Id: docker-jenkins/0.0.4-dev run.sh
 
 set -e
 
@@ -21,11 +21,29 @@ trueish "$Build_Destroy_Existing" && {
   cid=
 } || noop
 
+
 trueish "$Run_Reset_Volume" && {
-  note "Need sudo to truncate volume"
-  sudo rm -rf $jenkins_home
-  note "Truncated jenkins_home volume ($jenkins_home)"
+  trueish "$Run_Home_Container" && {
+    docker volume rm jenkins-$env-home || noop
+    docker volume create --name jenkins-$env-home
+    note "Recreated jenkins-$env-home volume"
+  } || {
+    note "Need sudo to truncate volume"
+    sudo rm -rf $jenkins_home
+    note "Truncated jenkins_home volume ($jenkins_home)"
+  }
 } || noop
+
+
+trueish "$Run_Home_Container" \
+  || mkdir -vp $jenkins_home
+
+
+# TODO: copy prod to acc volume
+#test -z "$Run_Copy_Home_Volume" || {
+#  docker run --rm --volumes-from $Run_Copy_Home_Volume \
+#    -v busybox tar cvf /src_home $chome
+#}
 
 
 
@@ -68,7 +86,9 @@ preconfig()
 
     jenkins-server* )
 
-        docker run -dt --name jnk-vol-tmp -v jenkins:$jenkins_home --entrypoint "cat" ubuntu \
+        # Preconfigure jenkins home folder using temporary container
+
+        docker run -dt --name jnk-vol-tmp -v jenkins-$env-home:$jenkins_home --entrypoint "cat" ubuntu \
           || error "Failed starting jnk-vol-tmp" 1
 
         docker exec jnk-vol-tmp mkdir -vp $jenkins_home/.ssh $jenkins_home/init.groovy.d/
@@ -78,6 +98,7 @@ preconfig()
         docker cp script/executors.groovy jnk-vol-tmp:$jenkins_home/init.groovy.d/executors.groovy
 
         {
+          echo "# Parameters for init.groovy.d/setup-user-security.groovy"
           echo Build_Admin_User="'$Build_Admin_User'"
           echo Build_Admin_Password="'$Build_Admin_Password'"
           echo Build_Admin_Public_Key="'$(cat $DCKR_VOL/ssh/id_?sa.pub)'"
@@ -88,17 +109,10 @@ preconfig()
 
         test -e custom/ && docker cp custom/ jnk-vol-tmp:$jenkins_home/custom
 
+	rm setup-user-security.init
+
         docker rm -f jnk-vol-tmp
 
-        #test -z "$Build_Chmod" || {
-        #  log "Build_Chmod=$Build_Chmod"
-        #  sudo chmod -R $Build_Chmod $jenkins_home
-        #}
-        #test -z "$Build_Chown" || {
-        #  log "Build_Chown=$Build_Chown"
-        #  sudo chown -R $Build_Chown $jenkins_home
-        #}
-        #ls -la $jenkins_home/
       ;;
 
     jenkins-slave* )

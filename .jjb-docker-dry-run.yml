@@ -1,10 +1,12 @@
 
 - job:
     name: docker-jenkins-dry-run-pipeline
-    version: 0.0.2 # docker-jenkins
+    version: 0.0.4-dev # docker-jenkins
 
     description: |
-      Testing Docker-Jenkins CI Pipeline
+      Testing Docker-Jenkins CI Pipeline interacting with docker daemon.
+
+      <p>(JTB/{version} .jjb-docker-dry-run.yml)</p>
 
     project-type: workflow
 

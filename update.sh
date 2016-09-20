@@ -4,7 +4,6 @@ set -e
 
 scriptname=update
 test -n "$tag" || . ./vars.sh "$@"
-test -n "$api_user" || get_env
 
 type err >/dev/null 2>&1 || { . ./util.sh; }
 
@@ -15,6 +14,7 @@ case "$image_type" in
 
   jenkins-server* )
 
+      test -n "$api_user" || get_env
 
       trueish "$Update_Plugins" && {
 
@@ -77,7 +77,7 @@ case "$image_type" in
 
         cld_json=clouds-$env.json
 
-        sed 's/\-dev\>/-'$env'/g' clouds.json \
+        sed 's/\-dev\.ssh\>/-'$env'.ssh/g' clouds.json \
 	  | sed 's/\<localhost\>/'"$DCKR_HOST"'/g' > $cld_json
 
         # FIXME: update JSON with arrays
@@ -105,7 +105,7 @@ case "$image_type" in
 
         . ./script/sh/create-jenkins-nodes.sh
 
-        note "Adding node"
+        note "Adding nodes"
         test -n "$DOTMPE_SLAVE_PORT" -a -n "$DOTMPE_SLAVE_HOST" || {
           error "Missing env vars ($DOTMPE_SLAVE_HOST:$DOTMPE_SLAVE_PORT)" 1
         }
@@ -172,8 +172,9 @@ case "$image_type" in
 
 
       trueish "$Update_Projects" && {
+        note "Updating projects.."
 
-        # FIXME: jenkins:jenkins config gets created during build.
+        # jenkins:jenkins config gets created during build.
         # Get existing JJB config from container, replacing URL with external
         jjb_config=.jenkins-jobs-${env}.ini
         docker cp $cname:/etc/jenkins_jobs/jenkins_jobs.ini $jjb_config.tmp
@@ -182,20 +183,15 @@ case "$image_type" in
         rm $jjb_config.tmp
         export jjb_config
 
-
         # Use JTB in container to setup some jobs
         test -n "$Build_Offline" \
-          && docker exec -ti $cname bash -c 'cd $JTB_SRC_DIR/ && git checkout dev' \
-          || docker exec -ti $cname bash -c 'cd $JTB_SRC_DIR/ && git checkout dev && git pull origin dev'
+          && docker exec -ti $cname bash -c 'cd $JTB_SRC_DIR/ && git checkout $JTB_TAG && make dist' \
+          || docker exec -ti $cname bash -c 'cd $JTB_SRC_DIR/ && git checkout $JTB_TAG && git pull origin dev && make dist'
 
         . ./script/sh/create-jenkins-jobs.sh
 
         note "Updating jobs (projects.tab)"
         generate_jobs_from_tab projects.tab
-
-        # TODO cleanup old JJB/JTB scripts
-        #export cname
-        #./jenkins-user-script.sh reconfigure_jtb_update_existing_projects
       }
 
 

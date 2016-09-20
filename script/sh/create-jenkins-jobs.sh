@@ -1,17 +1,21 @@
 #!/bin/sh
 
-type noop 2>&1 >/dev/null || . ./util.sh
+type noop >/dev/null 2>&1 || . ./util.sh
+type get_env >/dev/null 2>&1 || . ./build-util.sh
+
+test -n "$env" || . .env.sh
 
 test -n "$api_user" || get_env
 test -n "$JENKINS_URL" || exit 130
 
 
+# Args: JOB_TYPE NAME_ARG PARAMS
 generate_job()
 {
   test -n "$1" || err "job-type expected" 1
   test -z "$4" || err "surplus args: '$4'" 1
 
-  log "generate-job: 1:$1 2:$2 3:$3"
+  info "generate-job: 1:$1 2:$2 3:$3"
   case "$1" in
 
     cb-folder )
@@ -20,10 +24,10 @@ generate_job()
         export $(echo $env_vars | sed 's/="[^"]*"//g')
 
         . ./script/sh/create-item-cb-folder.sh \
-          && log "Created folder ($3)" \
-          || { 
-		err "failed creating folder ($3)"; 
-		return 2; 
+          && note "Created folder ($3)" \
+          || {
+            err "Failed creating folder ($3)";
+            return 2;
           }
       ;;
 
@@ -40,14 +44,14 @@ generate_job()
 
     jtb-preset )
         generate_job jtb-prepare-preset "$2" "$3" \
-            && log "Generated preset $2 ($3)" \
+            && note "Generated preset $2 ($3)" \
             || {
               err "Failed creating preset $2 ($3)"
               return
             }
 
         generate_job jtb-update-preset "$2" "$3" \
-            && log "Updated $1 project $2" \
+            && note "Updated $1 project $2" \
             || err "Failed updating $1 project $2"
 
         docker exec $cname bash -c 'rm $JTB_SRC_DIR/'$(echo $2)'.yaml'
@@ -56,26 +60,30 @@ generate_job()
     jtb )
         test -n "$2" || err "args expected" 1
         test -e "$2" && {
-          # Copy local file to container
-          name=$(basename $(basename $2 .yml) .yaml)
-          docker cp $2 $cname:/tmp/$name.yml
+          # File exists on this host, copy local file to container
+          name="$(basename "$(basename $2 .yml)" .yaml)"
           path='/tmp/'$name'.yml'
+          docker cp $2 $cname:$path \
+            && note "Copied $name to container" \
+            || error "Copying $name to container" 1
+          docker exec $cname ls -la /tmp/$name.yml || error missing 1
         } || {
           # Assume it is a path in the container
           path=$2
         }
         ./jenkins-user-script.sh reconfigure_jtb_job \
             $path \
-            && log "Updated $1 project config $2" \
-            || err "Failed updating $1 project config $2"
+            && note "Updated $1 project config $2" \
+            || error "Failed updating $1 project config $2"
         test ! -e "$2" || {
-          docker exec -u root $cname rm $path
+          docker exec -u root $cname rm $path \
+            || warn "Error removing '$path'"
         }
       ;;
 
     jtb-gh-travis )
         generate_job jtb-prepare-preset "generic-gh-travis" "$3" \
-            && log "Generated GitHub/Travis preset $2 ($3)" \
+            && note "Generated GitHub/Travis preset $2 ($3)" \
             || {
               err "Failed creating GitHub/Travis preset $2 ($3)"
               return
@@ -100,7 +108,7 @@ generate_job()
 	which jenkins-jobs >/dev/null 2>&1 || error "Local jenkins-jobs install required" 1
         test -e "$2" || { err "No JJB file '$2'"; return 1; }
         jenkins-jobs --conf $jjb_config update $2 \
-          && log "Updated $1 project config $2" \
+          && note "Updated $1 project config $2" \
           || err "Failed updating $1 project config $2"
       ;;
 
@@ -152,6 +160,5 @@ generate_jobs_from_tab()
       sleep 2
     }
   done
-
 }
 

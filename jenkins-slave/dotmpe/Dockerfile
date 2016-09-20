@@ -23,9 +23,13 @@ RUN apt-get update &&\
 
 # Install some build slave essentials
 RUN apt-get update &&\
-    apt-get install -y build-essential git &&\
+    apt-get install -y build-essential git python &&\
     apt-get clean -y
 
+# Install PIP
+RUN cd && \
+  wget https://bootstrap.pypa.io/get-pip.py && \
+  python get-pip.py
 
 
 ARG username=jenkins
@@ -34,14 +38,30 @@ ARG username=jenkins
 
 RUN adduser --system --home /home/$username --shell /bin/bash --group $username
 RUN echo "$username:$username" | chpasswd
-RUN usermod $username -a -G sudo
-RUN usermod $username -a -G staff
 
 RUN mkdir /home/$username/project
-
 RUN chown -R $username:$username /home/$username/
 
+# Update jenkins user
+RUN \
+  usermod -aG shadow $username && \
+  usermod -aG staff $username && \
+  usermod -aG sudo $username && \
+  echo "$username:$username" | chpasswd
 
+
+USER $username
+
+# Install Basher
+RUN cd \
+  && git clone https://github.com/basherpm/basher.git .basher \
+  && echo 'export PATH="$HOME/.basher/bin:$PATH"' >> /home/$username/.bash_profile
+
+# Add user install path
+RUN echo 'export PATH="$HOME/.local/bin:$PATH"' >> /home/$username/.bash_profile
+
+
+USER root
 
 EXPOSE 22
 

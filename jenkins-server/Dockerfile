@@ -1,5 +1,5 @@
 
-# Id: docker-jenkins/0.0.3
+# Id: docker-jenkins/0.0.4-dev
 
 FROM jenkins:2.0
 
@@ -22,6 +22,37 @@ RUN \
     mkdir -vp $dir && chgrp staff $dir && chmod g+rw $dir ; \
   done
 
+# Setup some tools from apt-get
+RUN apt-get update && \
+  RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive \
+  apt-get install -y -qq \
+    vim sudo tree tmux python apt-utils \
+    rsync curl
+
+
+# Install PIP
+RUN cd && \
+  wget https://bootstrap.pypa.io/get-pip.py && \
+  python get-pip.py
+RUN pip install docutils
+
+# Install Node.JS (and Bower, Grunt)
+RUN curl --silent --location https://deb.nodesource.com/setup_0.12 | bash -
+RUN RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive \
+             apt-get install -y -qq \
+             nodejs build-essential
+RUN npm install -g bower grunt-cli
+
+
+USER jenkins
+
+# Install plugins
+COPY plugins.txt /plugins.txt
+RUN /usr/local/bin/plugins.sh /plugins.txt
+
+USER root
+
+
 # Prepare entry point and related scripts
 COPY container-init.sh /opt/dotmpe/docker-jenkins/init.sh
 RUN chmod +x /opt/dotmpe/docker-jenkins/init.sh 
@@ -29,6 +60,7 @@ COPY util.sh /opt/dotmpe/docker-jenkins/
 COPY table.lib.sh /opt/dotmpe/docker-jenkins/
 COPY os.lib.sh /opt/dotmpe/docker-jenkins/
 COPY std.lib.sh /opt/dotmpe/docker-jenkins/
+
 
 # Setup up jenkins-cli
 #ARG jenkins_cli_jar_flags=-noKeyAuth
@@ -39,73 +71,45 @@ RUN /opt/dotmpe/docker-jenkins/init.sh init_cli \
     > /usr/local/bin/jenkins-cli && \
   chmod +x /usr/local/bin/jenkins-cli
 
-# Setup some tools from apt-get
-RUN apt-get update && \
-  RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive \
-  apt-get install -y -qq \
-    vim sudo tree tmux python apt-utils
 
-# Install PIP
-RUN cd && \
-  wget https://bootstrap.pypa.io/get-pip.py && \
-  python get-pip.py
-
-# Install Node.JS (and Bower, Grunt)
-RUN curl --silent --location https://deb.nodesource.com/setup_0.12 | bash -
-RUN RUNLEVEL=1 DEBIAN_FRONTEND=noninteractive \
-             apt-get install -y -qq \
-             nodejs build-essential
-RUN npm install -g bower grunt-cli
+RUN \
+      mkdir -vp /srv/project-local \
+      && chown jenkins:jenkins /srv/project-local \
+      && chmod g+rw /srv \ 
+      && chgrp jenkins /srv
 
 
-RUN mkdir -vp /srv/project-local
-RUN chown jenkins:jenkins /srv/project-local
-RUN chmod g+rw /srv
-RUN chgrp jenkins /srv
+RUN pip uninstall -y six
 
 
+# Install other utils as user
+# to make sure all installation prefixes are writable
 USER jenkins
 
 
-ARG build_tag=dev
-#ARG build_tag=f_pipeline_dsl
-ARG build_meta=
-
 ENV SRC_PREFIX /src/
-ARG JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
-ARG JTB_SRC_DIR=$SRC_PREFIX/jenkins-templated-builds
-
-#ENV PATH $PATH:$JENKINS_HOME/.local/bin
-
-RUN pip install  \
-      ordereddict 'six>=1.5.2' \
-      PyYAML 'python-jenkins>=0.4.1' 'pbr>=0.8.2,<2.0' \
-      stevedore
-#      docutils
-
-RUN \
-      python -c 'import jenkins' \
-      python -c 'import yaml'
-
 
 # Install JJB
+ARG JJB_TAG=master
+ARG JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
 RUN \
-  /opt/dotmpe/docker-jenkins/init.sh try_install_jjb && \
+  /opt/dotmpe/docker-jenkins/init.sh try_install_jjb $JJB_TAG && \
   chown jenkins:staff -R $JJB_SRC_DIR
 
 # Configure JJB
-ARG jjb_user=jenkins
-ARG jjb_password=jenkins
-
+ARG JJB_USER=jenkins
+ARG JJB_PASSWORD=jenkins
 RUN \
   mkdir -vp /etc/jenkins_jobs && \
-  /opt/dotmpe/docker-jenkins/init.sh init_jjb localhost:8080 $jjb_user $jjb_password \
+  /opt/dotmpe/docker-jenkins/init.sh init_jjb localhost:8080 $JJB_USER $JJB_PASSWORD \
     > /etc/jenkins_jobs/jenkins_jobs.ini && \
   chown jenkins:staff /etc/jenkins_jobs/jenkins_jobs.ini
 
 # Clone JJB templates repo
+ARG JTB_TAG=master
+ARG JTB_SRC_DIR=$SRC_PREFIX/jenkins-templated-builds
 RUN cd && mkdir -vp .local/bin && \
-  /opt/dotmpe/docker-jenkins/init.sh try_install_jtb $build_tag $build_meta
+  /opt/dotmpe/docker-jenkins/init.sh try_install_jtb $JTB_TAG
 
 
 # Setup some autorun scripts to configure jenkins
@@ -114,10 +118,6 @@ COPY script/executors.groovy /usr/share/jenkins/ref/init.groovy.d/
 #COPY script/set-global-build-env.groovy /usr/share/jenkins/ref/init.groovy.d/
 #COPY script/set-admin-email.groovy /usr/share/jenkins/ref/init.groovy.d/
 COPY script/setup-user-security.groovy /usr/share/jenkins/ref/init.groovy.d/
-
-# Install plugins
-COPY plugins.txt /plugins.txt
-RUN /usr/local/bin/plugins.sh /plugins.txt
 
 
 

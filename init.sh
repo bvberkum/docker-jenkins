@@ -8,7 +8,7 @@ type noop >/dev/null 2>&1 || . ./util.sh
 
 log "Starting init.sh"
 
-. ./vars.sh "$@"
+. ./vars.sh "$@" # args: ENV TAG
 
 log "Vars loaded"
 
@@ -24,6 +24,19 @@ trueish "$Build_Destroy_Existing" || {
         || error "Another container named '$cname' exists" 1
   }
 }
+
+
+test -d $DCKR_VOL/ssh || mkdir $DCKR_VOL/ssh
+test -e "$(echo $DCKR_VOL/ssh/id_?sa.pub | tr ' ' '\n' | head -n 1)" || {
+  note "Generating SSH RSA keypair for local docker host"
+  ssh-keygen -t rsa -f $DCKR_VOL/ssh/id_rsa
+}
+
+test -e $DCKR_VOL/ssh/authorized_keys || {
+  note "Using users authorized_keys"
+  cp $HOME/.ssh/authorized_keys $DCKR_VOL/ssh
+}
+
 
 trueish "$Build_Image" && {
 
@@ -86,4 +99,4 @@ echo \
 info "Image $image_ref build, and running at $hostname"
 
 
-# Id: docker-jenkins/0.0.3 init.sh
+# Id: docker-jenkins/0.0.4-dev init.sh

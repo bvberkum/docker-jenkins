@@ -36,4 +36,4 @@ USER jenkins
 USER root
 
 
-# Id: docker-jenkins/0.0.3
+# Id: docker-jenkins/0.0.4-dev

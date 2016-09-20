@@ -16,7 +16,6 @@ test ! -e "$DCKR_CONF/$hostname/vars.sh" || {
   . $DCKR_CONF/$hostname/vars.sh
 }
 test -n "$DCKR_VOL" || DCKR_VOL=/Volumes/dckr
-# XXX test -e "$DCKR_VOL" || error "Missing docker volumes dir $DCKR_VOL" 1
 
 test -n "$VERBOSE" && {
   test ! -e "$DCKR_CONF" || info DCKR_CONF=$DCKR_CONF
@@ -35,7 +34,7 @@ test -n "$dckr_run_f" || dckr_run_f="-d"
 test -n "$image_type" || image_type=$(echo $dckrfile_dir | tr '/' '-')
 test -n "$shostname" || shostname=$image_type
 test -n "$image_ref" || image_ref=$vendor/$image_type:$tag
-test -n "$env_vars_file" || env_vars_file=.env-$env.sh
+test -n "$env_vars_file" || env_vars_file=.$image_type-env-$env.sh
 test -n "$env" || error "No env given" 1
 test -n "$tag" || error "No tag given" 1
 
@@ -43,13 +42,14 @@ case "$image_type" in
 
   jenkins-server* )
 
-    test -n "$guided_server_setup" || guided_server_setup=0
+    #test -n "$Config_Wizard" || Config_Wizard=0
+    test -n "$Config_Guided" || Config_Guided=0
 
     # Guided setup needs an agent at the terminal
     tty -s && interactive=1 || interactive=
     trueish "$interactive" || {
       test -n "$Build_Copy_JJB" || Build_Copy_JJB=0
-      trueish "$guided_server_setup" \
+      trueish "$Config_Guided" \
         && error "Cannot do interactive setup without console"
     }
   ;;
@@ -71,12 +71,15 @@ trueish "$Build_Offline" && {
   test -n "$Update_Plugins" || Update_Plugins=1
 }
 test -n "$Build_Only" || Build_Only=0
+test -n "$Run_Reset_Volume" || Run_Reset_Volume=1
 trueish "$Run_Reset_Volume" && {
   test -n "$Build_Destroy_Existing" || Build_Destroy_Existing=1
 } || {
   test -n "$Build_Destroy_Existing" || Build_Destroy_Existing=0
 }
+test -n "$Run_Home_Container" || Run_Home_Container=1
 test -n "$Build_Config" || Build_Config=1
+test -n "$Config_Init_Keys" || Config_Init_Keys=1
 test -n "$Build_Updates" || Build_Updates=1
 test -n "$Update_Customizations" || Update_Customizations=1
 test -n "$Update_Credentials" || Update_Credentials=1
@@ -91,6 +94,9 @@ test -n "$Build_Admin_User" || Build_Admin_User=jenkins
 test -n "$Build_Admin_Password" || Build_Admin_Password=jenkins
 test -n "$Build_Copy_JJB" || Build_Copy_JJB=0
 test -n "$Build_URL_Include_Port" || Build_URL_Include_Port=1
+
+test -n "$JTB_TAG" || JTB_TAG=dev
+test -n "$JJB_TAG" || JJB_TAG=build
 
 
 # Check if requested env matches with current docker server
@@ -135,16 +141,17 @@ esac
 
 
 ## "DIND"
-# http://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/
 
 case "$image_type" in
 
   *jenkins-server* )
-      test -n "$Build_Privileged_Docker" || Build_Privileged_Docker=1
+      test -n "$Build_Dind" || Build_Dind=1
+      test -n "$Build_Dind_Share" || Build_Dind_Share=1
     ;;
 
   *dind* )
-      test -n "$Build_Privileged_Docker" || Build_Privileged_Docker=1
+      test -n "$Build_Dind" || Build_Dind=1
+      test -n "$Build_Dind_Share" || Build_Dind_Share=1
     ;;
 
 esac
@@ -158,11 +165,6 @@ case "$env" in
 
       test -n "$Run_Reset_Volume" || Run_Reset_Volume=1
       test -n "$Build_Destroy_Existing" || Build_Destroy_Existing=1
-    ;;
-
-  * )
-      test -n "$Run_Reset_Volume" || Run_Reset_Volume=0
-      test -n "$Build_Destroy_Existing" || Build_Destroy_Existing=0
     ;;
 
 esac
@@ -256,14 +258,27 @@ case "$image_type" in
         info "JENKINS_URL=$JENKINS_URL"
       }
 
-      echo "# Generated at by $0 at $(date)" > $env_vars_file
+      {
+        echo "# Generated at by $0 at $(date)"
 
-      echo JTB_SRC_DIR=/srv/project-local/jenkins-templated-builds >> $env_vars_file
-      echo JJB_SRC_DIR=/srv/project-local/jenkins-job-builder >> $env_vars_file
-      #echo JNK_UC_SRC=/srv/project-local/jenkins-userContent >> $env_vars_file
+        echo JTB_TAG=$JTB_TAG
+        echo JJB_TAG=$JJB_TAG
 
-      #dckr_run_f="$dckr_run_f -v $jenkins_home:$chome:rw"
-      dckr_run_f="$dckr_run_f -v jenkins:$chome:rw"
+        echo JJB_USER=$Build_Admin_User
+        echo JJB_PASSWORD=$Build_Admin_Password
+
+        echo JTB_SRC_DIR=/srv/project-local/jenkins-templated-builds
+        echo JJB_SRC_DIR=/srv/project-local/jenkins-job-builder
+        #echo JNK_UC_SRC=/srv/project-local/jenkins-userContent
+
+      } > $env_vars_file
+
+      # Run from container or local mount volume
+      trueish "$Run_Home_Container" && {
+        dckr_run_f="$dckr_run_f -v jenkins-$env-home:$chome:rw"
+      } || {
+        dckr_run_f="$dckr_run_f -v $jenkins_home:$chome:rw"
+      }
     ;;
 
 
@@ -307,9 +322,12 @@ esac
 
 ## Privileged run
 
-trueish "$Build_Privileged_Docker" && {
+trueish "$Build_Dind" && {
   dckr_run_f=" --privileged
     -v /var/run/docker.sock:/var/run/docker.sock $dckr_run_f "
+  trueish "$Build_Dind_Share" && {
+    dckr_run_f=" -v /var/lib/docker:/var/lib/docker $dckr_run_f "
+  }
 }
 
 dckr_run_f=" $dckr_run_f --env VIRTUAL_HOST=$chostname --env VIRTUAL_PORT=8080 "

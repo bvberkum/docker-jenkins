@@ -10,35 +10,28 @@ type err >/dev/null 2>&1 || { . ./util.sh; }
 
 export cname
 
+
 info "Configuration (chostname=$chostname, JENKINS_URL=$JENKINS_URL)"
 
-trueish "$Run_Init_Keys" && {
 
-  docker exec -u jenkins $cname mkdir -vp $chome/.ssh/
+trueish "$Config_Init_Keys" && {
+  note "Initializing keys"
 
-  test -n "$ssh_vol" -a -e "$ssh_vol" && {
+  docker exec -u jenkins $cname mkdir -vp $chome/.ssh/ \
+    || error "Error creating .ssh folder in user homedir" 1
 
-    log "ssh_vol=$ssh_vol"
 
-  } || {
+  info "Adding keys from DCKR_VOL ($DCKR_VOL/ssh)"
 
-    info "Adding keys from DCKR_VOL ($DCKR_VOL/ssh)"
+  test -e $DCKR_VOL/ssh && {
 
-    test -e $DCKR_VOL/ssh && {
-      (
-        test -e "$(echo $DCKR_VOL/ssh/id_?sa.pub | tr ' ' '\n' | head -n 1)" \
-          || ssh-keygen -t rsa -f $DCKR_VOL/ssh/id_rsa
 
-        docker cp $DCKR_VOL/ssh/id_?sa $cname:$chome/.ssh/
-        docker cp $DCKR_VOL/ssh/id_?sa.pub $cname:$chome/.ssh/
-        docker cp $DCKR_VOL/ssh/authorized_keys $cname:$chome/.ssh/
+    docker cp $DCKR_VOL/ssh/id_?sa $cname:$chome/.ssh/
+    docker cp $DCKR_VOL/ssh/id_?sa.pub $cname:$chome/.ssh/
+    docker cp $DCKR_VOL/ssh/authorized_keys $cname:$chome/.ssh/
 
-      ) || {
+  } || error "No keydir found, skipped ($DCKR_VOL/ssh)"
 
-        info "Error chown $chome/.ssh: $? (Operation not permitted)"
-      }
-    } || error "No keydir found, skipped ($DCKR_VOL/ssh)"
-  }
 
   trueish "$Build_Docker_Machine" && {
 
@@ -76,25 +69,24 @@ trueish "$Run_Init_Keys" && {
 
 }
 
-info "image_type=$image_type"
 
 case "$image_type" in
 
+  # FIXME: probably cleanup everything
   jenkins-server* )
 
-
       trueish "$Run_Reset_Volume" && {
+      	note "Config run after volume reset"
 
-        jvm_opts="$(docker exec -ti $cname bash -c 'echo $JAVA_OPTS')"
-        test -z "$jvm_opts" || {
-          fnmatch "*-Djenkins.install.runSetupWizard=false*" "$jvm_opts" && {
-            guided_server_setup=0
-          }
-        }
+        #jvm_opts="$(docker exec -ti $cname bash -c 'echo $JAVA_OPTS')"
+        #test -z "$jvm_opts" || {
+        #  fnmatch "*-Djenkins.install.runSetupWizard=false*" "$jvm_opts" && {
+        #    Config_Guided=0
+        #  }
+        #}
+        #echo
 
-        echo
-
-        trueish "$guided_server_setup" && {
+        trueish "$Config_Guided" && {
 
           trueish "$interactive" || {
             error "Guided setup requested (jenkins.install.runSetupWizard=true: $JAVA_OPTS)"
@@ -177,28 +169,8 @@ case "$image_type" in
 
         } || {
 
-          noop
-
           # 1.* and no-wizard setup
-          #info "Automated config.."
-
-          #export api_user=$Build_Admin_User
-          #export api_secret=$Build_Admin_User
-          #store_env $env
-          #get_env $env
-
-
-          # Wait a bit for HTML UI to load?
-          #info "Fetching $JENKINS_URL/login"
-          #curl -D - -sf -L -o /dev/null $JENKINS_URL/login || {
-          #  while true
-          #  do
-          #    info "Waiting for HTML UI... ($JENKINS_URL/login)"
-          #    sleep 15
-          #    curl -D - -sf -L -o /dev/null $JENKINS_URL/login \
-          #      && break
-          #  done
-          #}
+          info "Automated config.."
         }
 
 
@@ -213,19 +185,20 @@ case "$image_type" in
               && break
           done
         }
-  
-  
+
+
         # Add initial jenkins credential to contact CLI, replace in update.sh
         # using cli grooby.
-  
+
         export JENKINS_URL
-  
+
         ssh_credentials_id="${hostname}-docker-ssh-key"
-  
+
         # FIXME: also need to add public key to user for initial CLI setup to
         # work
-        for pubkey in $jenkins_home/.ssh/id_?sa.pub
+        for pubkey in $DCKR_VOL/ssh/id_?sa.pub
         do
+          test -e "$pubkey" || err "Expected SSH key in $jenkins_home" 1
           log "Found pubkey $pubkey"
           docker exec -ti $cname \
               /opt/dotmpe/docker-jenkins/init.sh add-user-public-key \
@@ -234,9 +207,8 @@ case "$image_type" in
                 && log "Added user public key $pubkey for jenkins" \
                 || err "Failed adding user pubkey $pubkey" 1
         done
-  
+
         #log "Creating ~/.ssh/ credentials ID"
-  
         #./script/sh/create-jenkins-ssh-host-credentials.sh \
         #    jenkins "$(hostname) Host SSH Key" $ssh_credentials_id \
         #    && log "Initial credentials succesfully created"
