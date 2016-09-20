@@ -9,14 +9,14 @@ test -x "$(which docker)" || error "Docker client missing" 1
 test -n "$hostname" || {
   case "$(hostname -s)" in
     [\ 0-9][\ 0-9][0-9] )
-        hostname="$(hostname | tr 'A-Z.-' 'a-z__')"
+        hostname="$(hostname | tr 'A-Z._' 'a-z--')"
       ;;
     [0-9]* )
         echo errorrrrrrrrr
         exit 221
       ;;
     * )
-        hostname="$(hostname -s | tr 'A-Z.-' 'a-z__')"
+        hostname="$(hostname -s | tr 'A-Z._' 'a-z--')"
       ;;
   esac
 }
