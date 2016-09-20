@@ -31,7 +31,7 @@ jtb            jtb-simple.yaml
 
 # Standard JJB jobs from Docker-Jenkins jobs (in local project)
 jjb            .jjb.yml
-jjb            .jjb-pipeline-build-step.yml
+#jjb            .jjb-pipeline-build-step.yml
 jjb            .jjb-docker-dry-run.yml            
 
 # Templated or vanilla JJB jobs from other projects
