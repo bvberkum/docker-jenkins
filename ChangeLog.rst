@@ -11,6 +11,10 @@
     triggered. Not all work for now, but Jenkins does.
     See also first edition of setup guide.
 
+
+.. [#] `docker 1.12 breaks plugin because of HostConfig <https://issues.jenkins-ci.org/browse/JENKINS-36080>`_
+
+
 0.0.4
   - Fixed user security setup (broke on wrong comment format).
   - Added preconfigured Simple Theme settings file.
@@ -28,6 +32,4 @@
     - tested all jobs. Only build step one is not working.
 
 
-
-.. [#] `docker 1.12 breaks plugin because of HostConfig <https://issues.jenkins-ci.org/browse/JENKINS-36080>`_
 

@@ -1,6 +1,6 @@
 :Created: 2015-08-30
 :Updated: 2016-08-31
-:Version: 0.0.4
+:Version: 0.0.5-dev
 
 Jenkins Server
   - `bvberkum/jenkins-server <//hub.docker.com/r/bvberkum/jenkins-server>`_

@@ -2,7 +2,7 @@
 
 - project:
     name: docker-jenkins
-    version: 0.0.4-dev # docker-jenkins
+    version: 0.0.5-dev # docker-jenkins
     file: .jjb.yml
 
     jobs:

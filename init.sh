@@ -109,4 +109,4 @@ docker logs $cname 2>&1 | grep -iE 'warn|exception|error' || stderr ok "Nothing 
 info "Image $image_ref build, and running at $hostname"
 
 
-# Id: docker-jenkins/0.0.4-dev init.sh
+# Id: docker-jenkins/0.0.5-dev init.sh

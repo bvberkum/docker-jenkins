@@ -1,5 +1,5 @@
 
-# Id: docker-jenkins/0.0.4-dev
+# Id: docker-jenkins/0.0.5-dev
 
 FROM jenkins:2.0
 

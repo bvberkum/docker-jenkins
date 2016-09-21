@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Id: docker-jenkins/0.0.4-dev build.sh
+# Id: docker-jenkins/0.0.5-dev build.sh
 
 scriptname=build
 

@@ -4,7 +4,7 @@
 # - Jenkins Job Builder [JJB]
 # - Jenkins CLI client.
 
-# Id: docker-jenkins/0.0.4-dev container-init.sh
+# Id: docker-jenkins/0.0.5-dev container-init.sh
 
 test -n "$hostname" || hostname=$(hostname)
 

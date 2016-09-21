@@ -37,4 +37,4 @@ RUN python /src/get-pip.py
 RUN pip install setuptools virtualenv
 
 
-# Id: docker-jenkins/0.0.4-dev
+# Id: docker-jenkins/0.0.5-dev

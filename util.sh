@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# Id: docker-jenkins/0.0.4-dev util.sh
+# Id: docker-jenkins/0.0.5-dev util.sh
 
-version=0.0.4-dev # docker-jenkins
+version=0.0.5-dev # docker-jenkins
 
 set -e
 

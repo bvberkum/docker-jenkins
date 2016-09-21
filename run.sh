@@ -3,7 +3,7 @@
 # Start fresh jenkins-mpe container with name, destroying previous instance with
 # name.
 
-# Id: docker-jenkins/0.0.4-dev run.sh
+# Id: docker-jenkins/0.0.5-dev run.sh
 
 set -e
 
