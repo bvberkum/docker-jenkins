@@ -117,6 +117,16 @@ case "$subcmd" in
 
     ;;
 
+  export_home )
+      # Create tar from JENKINS_HOME
+      mkdir -vp build
+      test -n "$1" || err "container name ref expected" 1
+      docker run --rm --volumes-from $1 \
+        -v build:/build \
+        busybox tar cjf /build/export.tar.bz2 $JENKINS_HOME
+      note "Export done, see build/export.tar.bz2"
+    ;;
+
   * )
       error "No sub-command '$subcmd'" 14
     ;;

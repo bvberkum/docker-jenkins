@@ -3,6 +3,7 @@
 - name: docker-jenkins
   id: docker-jenkins
   main: docker-jenkins
+  version: 0.0.5-dev # docker-jenkins
     
   environments:
   - dev
