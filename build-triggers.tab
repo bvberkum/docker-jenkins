@@ -8,7 +8,7 @@ jtb-base-0
 #jnk/examples/docker-any-slave-shell-example
 
 docker-jenkins-dry-run-pipeline
-#docker-jenkins-pipeline    Build_Version=2.0 Build_Tag=auto Rebuild=1
+#docker-jenkins-pipeline    Build_Tag=2.0 Build_Env=auto Rebuild=1
 
 # Simple table with projects/parameters to trigger after update.sh
 # vim:ft=sh:

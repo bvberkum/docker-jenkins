@@ -1,9 +1,9 @@
 
-if (!Build_Version) {
-  Build_Version = '2.0'
-}
 if (!Build_Tag) {
-  Build_Tag = 'dev'
+  Build_Tag = '2.0'
+}
+if (!Build_Env) {
+  Build_Env = 'dev'
 }
 
 // Ask for Docker-in-Docker or other Docker host Jenkins slave
@@ -24,8 +24,8 @@ node("dind || docker-host") {
 
   stage 'Build'
 
-  env.env = Build_Tag
-  env.tag = Build_Version
+  env.env = Build_Env
+  env.tag = Build_Tag
   env.Build_Image = 1
   env.Build_Remove_Existing = 1
   env.Build_Only = 1

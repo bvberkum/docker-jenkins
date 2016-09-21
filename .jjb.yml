@@ -1,32 +1,43 @@
 
 
 - project:
-    name: docker-jenkins-dry-run-pipeline
+    name: docker-jenkins
     version: 0.0.4-dev # docker-jenkins
+    file: .jjb.yml
 
     jobs:
-      - docker-jenkins-pipeline:
-          version: '{version}'
+      - '{name}-pipeline':
+          description: |
+            <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
+
+            <p><code class="muted">{name}/{version} {file}</code></p>
+
 
 
 - job-template:
-    name: docker-jenkins-pipeline
+    name: '{name}-pipeline'
 
-    description: |
-      <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
-
-      <p>(docker-jenkins/{version} .jjb-pipeline-build-step.yml)</p>
+    project-type: workflow
 
     disabled: true
 
-    project-type: workflow
+    metadata:
+    - string:
+        name: DCKR_JNK_VERSION
+        value: '{version}'
+        expose-to-env: true
+    - string:
+        name: DCKR_JNK_JJB_FILE
+        value: '{file}'
+        expose-to-env: true
 
     parameters:
 
     - choice:
-        name: Build_Version
+        name: Build_Tag
         choices:
         - ""
+        - "2.7.4"
         - "2.7.3"
         - "2.7.2"
         - "2.7.1"
@@ -36,7 +47,8 @@
         - "1.565.3"
 
     - choice:
-        name: Build_Tag
+        name: Build_Env
+        description: |
         choices:
         - "build"
         - "latest"
@@ -54,16 +66,12 @@
         cron: "*/1 * * * *" 
 
     dsl:
-      # FIXME: github:dotmpe/jenkins-jobs-builder #f_pipeline_dsl
-      #dsl-file: .Jenkinsfile
-      #needs-workspace: true
 
       script-name: .Jenkinsfile
 
       scm:
       - git:
           url: https://github.com/dotmpe/docker-jenkins.git
-          #url: git@github.com:dotmpe/docker-jenkins.git
           branches:
           - origin/dev
           local-branch: dev
