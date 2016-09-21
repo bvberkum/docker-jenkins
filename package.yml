@@ -16,5 +16,10 @@
 
   pd-meta:
     env: dev
-
+    tasks:
+      tags:
+        - XXX
+        - TODO
+        - FIXME
+        - TOTEST
 
