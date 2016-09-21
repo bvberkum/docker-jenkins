@@ -7,6 +7,7 @@ version=0.0.4-dev # docker-jenkins
 set -e
 
 test -n "$scriptdir" || scriptdir="$(dirname "$0")"
+test -n "$TERM" || export TERM=dumb
 
 . $scriptdir/table.lib.sh
 . $scriptdir/os.lib.sh
