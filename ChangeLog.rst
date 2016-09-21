@@ -23,7 +23,7 @@
   - Fixes for JJB configs (.jjb.yml) for description contain source
     project name and version, and expose version and
     TOTEST: JJB filename to build env.
-
+  - Added 'Hidden Parameter' plugin.
 
 .. [#] `docker 1.12 breaks plugin because of HostConfig <https://issues.jenkins-ci.org/browse/JENKINS-36080>`_
 
