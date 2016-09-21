@@ -13,8 +13,10 @@ node("dind || docker-host") {
 
   stage('Checkout') {
 
-    sh "echo DCKR_JNK_VERSION=$DCKR_JNK_VERSION"
-    sh "echo DCKR_JNK_JJB_FILE=$DCKR_JNK_JJB_FILE"
+    sh '''
+      echo DCKR_JNK_VERSION=$DCKR_JNK_VERSION
+      echo DCKR_JNK_JJB_FILE=$DCKR_JNK_JJB_FILE
+    '''
   
     String checkout_dir="../workspace@script"
     if (fileExists(checkout_dir)) {

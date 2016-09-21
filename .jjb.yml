@@ -18,22 +18,19 @@
     disabled: true
 
     description: |
-      <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
+      <p>Building Jenkins-Server/Slave Docker-Jenkins (<code class="muted">inits.sh</code>) in a pipeline. </p>
 
       <p><code class="muted">{name}/{version}</code> <code class="muted">{file}</code></p>
 
 
-    metadata:
-    - string:
-        name: DCKR_JNK_VERSION
-        value: '{version}'
-        expose-to-env: true
-    - string:
-        name: DCKR_JNK_JJB_FILE
-        value: '{file}'
-        expose-to-env: true
-
     parameters:
+
+    - hidden:
+        name: DCKR_JNK_VERSION
+        default: '{version}'
+    - hidden:
+        name: DCKR_JNK_JJB_FILE
+        default: '{file}'
 
     - choice:
         name: Build_Tag

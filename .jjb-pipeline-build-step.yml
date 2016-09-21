@@ -18,7 +18,7 @@
     disabled: true
 
     description: |
-      <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
+      <p>Building Jenkins-Server/Slave Docker-Jenkins (<code class="muted">inits.sh</code>) in a pipeline build-step. </p>
 
       <p><code class="muted">{name}/{version}</code> <code class="muted">{file}</code></p>
 

@@ -30,6 +30,8 @@
     dsl:
       script: |
 
+        // workflow jobs do not support metadata. Can either use 
+        // hidden parameter, or inline DSL using withEnv:
         withEnv([
           "DCKR_JNK_VERSION={version}",
           "DCKR_JNK_JJB_FILE={file}"
