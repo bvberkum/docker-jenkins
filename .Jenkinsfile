@@ -30,8 +30,8 @@ node("dind || docker-host") {
 
     // The rest of this stage deals with build name/description
     rev = getSh "git rev-parse HEAD"
-    ref = getSh "git show-ref | grep ^${rev} | cut -d ' ' -f 2 | head -n 1"
-    branchName = getSh "basename ${ref}"
+    ref = getSh "git show-ref | grep -v remotes | grep ^${rev} | cut -d ' ' -f 2 | head -n 1"
+    branchName = getSh "echo ${ref} | cut -d '/' -f 3- "
 	  git_descr = getSh "git describe --always"
 	  rev_abbrev = getSh "echo $rev | cut -c1-11"
 
