@@ -37,7 +37,7 @@ node("dind || docker-host") {
 
     currentBuild.displayName = "${git_descr} b${env.BUILD_NUMBER}"
     currentBuild.description = \
-      "$rev_abbrev ($branchName)  $Build_Env:$Build_Tag  Job version: $DCKR_JNK_VERSION"
+      "$rev_abbrev ($branchName)  ${env.Build_Env}:${env.Build_Tag}  Job version: $DCKR_JNK_VERSION"
   }
 
 
