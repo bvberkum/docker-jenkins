@@ -1,12 +1,21 @@
 
-- job:
-    name: docker-jenkins-pipeline
+
+- project:
+    name: docker-jenkins-dry-run-pipeline
     version: 0.0.4-dev # docker-jenkins
+
+    jobs:
+      - docker-jenkins-pipeline:
+          version: '{version}'
+
+
+- job-template:
+    name: docker-jenkins-pipeline
 
     description: |
       <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
 
-      <p>(JTB/{version} .jjb-pipeline-build-step.yml)</p>
+      <p>(docker-jenkins/{version} .jjb-pipeline-build-step.yml)</p>
 
     disabled: true
 

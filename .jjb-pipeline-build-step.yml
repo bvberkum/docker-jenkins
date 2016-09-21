@@ -1,7 +1,16 @@
 
-- job:
+
+- project:
     name: docker-jenkins-pipeline-build-step
     version: 0.0.4-dev # docker-jenkins
+
+    jobs:
+      - docker-jenkins-pipeline-build-step:
+          version: '{version}'
+
+
+- job-template:
+    name: docker-jenkins-pipeline-build-step
 
     description: |
       <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
