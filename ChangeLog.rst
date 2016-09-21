@@ -20,6 +20,9 @@
   - Added build-description column to custom Test list view.
   - Whishlist review.
   - Set executors to 1, but added JEKNINS_EXECUTORS env var.
+  - Fixes for JJB configs (.jjb.yml) for description contain source
+    project name and version, and expose version and
+    TOTEST: JJB filename to build env.
 
 
 .. [#] `docker 1.12 breaks plugin because of HostConfig <https://issues.jenkins-ci.org/browse/JENKINS-36080>`_
