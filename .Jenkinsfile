@@ -11,38 +11,39 @@ println "Waiting for node 'dind || docker-host'"
 
 node("dind || docker-host") {
 
+  stage('Checkout') {
 
-  stage 'Checkout'
+    sh "echo DCKR_JNK_VERSION=$DCKR_JNK_VERSION"
+    sh "echo DCKR_JNK_JJB_FILE=$DCKR_JNK_JJB_FILE"
   
-  String checkout_dir="../workspace@script"
-  if (fileExists(checkout_dir)) {
-    dir checkout_dir
-  } else {
-    checkout scm
+    String checkout_dir="../workspace@script"
+    if (fileExists(checkout_dir)) {
+      dir checkout_dir
+    } else {
+      checkout scm
+    }
   }
 
 
-  stage 'Build'
+  stage('Build') {
 
-  env.env = Build_Env
-  env.tag = Build_Tag
-  env.Build_Image = 1
-  env.Build_Remove_Existing = 1
-  env.Build_Only = 1
-  env.DCKR_VOL = pwd tmp: true
+    env.env = Build_Env
+    env.tag = Build_Tag
+    env.Build_Image = 1
+    env.Build_Remove_Existing = 1
+    env.Build_Only = 1
+    env.DCKR_VOL = pwd tmp: true
 
-  sh 'echo env=$env'
-  sh 'test -n "$env"'
+    sh 'echo env=$env'
+    sh 'test -n "$env"'
 
-  sh """#!/bin/bash
+    sh """#!/bin/bash
 
-  ./inits.sh server
-  ./inits.sh slave
-  ./inits.sh slave-dind
-  """
-
-
-
+    ./inits.sh server
+    ./inits.sh slave
+    ./inits.sh slave-dind
+    """
+  }
 }
 
 

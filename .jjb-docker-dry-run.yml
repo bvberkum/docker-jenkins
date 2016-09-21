@@ -1,16 +1,12 @@
 
 
 - project:
-    name: docker-jenkins-dry-run-pipeline
+    name: docker-jenkins
     version: 0.0.4-dev # docker-jenkins
     file: .jjb-docker-dry-run.yml
 
     jobs:
-      - '{name}-dry-run-pipeline':
-          description: |
-            <p>Testing Docker-Jenkins CI Pipeline interacting with docker daemon. </p>
-
-            <p><code class="muted">{name}/{version} {file}</code></p>
+      - '{name}-dry-run-pipeline': {}
 
 
 
@@ -19,15 +15,11 @@
 
     project-type: workflow
 
-    metadata:
-    - string:
-        name: DCKR_JNK_VERSION
-        value: '{version}'
-        expose-to-env: true
-    - string:
-        name: DCKR_JNK_JJB_FILE
-        value: '{file}'
-        expose-to-env: true
+    description: |
+      <p>Testing Docker-Jenkins CI Pipeline interacting with docker daemon. </p>
+
+      <p><code class="muted">{name}/{version}</code> <code class="muted">{file}</code></p>
+
 
     parameters: []
 
@@ -38,13 +30,26 @@
     dsl:
       script: |
 
-        stage "Prerun"
-        println "Waiting for node 'dind || docker-host'"
-        node("dind || docker-host") {
+        withEnv([
+          "DCKR_JNK_VERSION={version}",
+          "DCKR_JNK_JJB_FILE={file}"
+        ]) {{
 
-          stage "Docker Dry-Run"
-          sh 'docker info'
-          sh 'docker ps'
-        }
+          stage("DinD wait") {{
+            println "Waiting for node 'dind || docker-host'"
+          }}
+
+          node("dind || docker-host") {{
+
+            stage("Env") {{
+              sh 'env | grep DCKR_JNK'
+            }}
+
+            stage("Docker Dry-Run") {{
+              sh 'docker info'
+              sh 'docker ps'
+            }}
+          }}
+        }}
 
 

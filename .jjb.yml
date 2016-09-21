@@ -6,11 +6,7 @@
     file: .jjb.yml
 
     jobs:
-      - '{name}-pipeline':
-          description: |
-            <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
-
-            <p><code class="muted">{name}/{version} {file}</code></p>
+      - '{name}-pipeline': {}
 
 
 
@@ -20,6 +16,12 @@
     project-type: workflow
 
     disabled: true
+
+    description: |
+      <p>Building Jenkins-Server/Slave Docker-Jenkins CI Pipeline (inits)</p>
+
+      <p><code class="muted">{name}/{version}</code> <code class="muted">{file}</code></p>
+
 
     metadata:
     - string:
