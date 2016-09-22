@@ -37,7 +37,6 @@ jjb            .jjb-docker-dry-run.yml
 
 # Templated or vanilla JJB jobs from other projects
 jjb            /srv/project-mpe/docker-treebox/.jjb-pipeline.yml
-jtb            /srv/project-mpe/docker-treebox/.jtb-test.yml
 
 jjb            /srv/project-mpe/jenkins-job-builder/.jjb.yml
 
