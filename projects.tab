@@ -6,13 +6,12 @@ cb-folder                           NAME=jnk/jtb DISPLAY_NAME="Templated Builds 
 cb-folder                           NAME=personal DISPLAY_NAME=Personal    
 
 # Presets to generate JJB jobs (with JTB tpl files)
-jtb-preset     gh-jtb               jtb_name=jnk/jtb/jtb  jtb_restrict_node=master jtb_credentials_id=$ssh_credentials_id
-jtb-preset     jtb-presets          jtb_name=jnk/jtb/jtb-presets jtb_disabled=false jtb_restrict_node=master jtb_branch=dev
-jtb-preset     gh-user-conf         jtb_name=jnk/user-conf jtb_restrict_node=master jtb_branch=dev jtb_disabled=false jtb_credentials_id=$ssh_credentials_id
+#jtb-preset     gh-jtb               jtb_name=jnk/jtb/jtb  jtb_restrict_node=master jtb_credentials_id=$ssh_credentials_id
+#jtb-preset     jtb-presets          jtb_name=jnk/jtb/jtb-presets jtb_disabled=false jtb_restrict_node=master jtb_branch=dev
+#jtb-preset     gh-user-conf         jtb_name=jnk/user-conf jtb_restrict_node=master jtb_branch=dev jtb_disabled=false jtb_credentials_id=$ssh_credentials_id
 jtb-preset     user-conf-free-git   jtb_name=jnk/user-conf jtb_restrict_node=debian jtb_branch=dev jtb_disabled=false jtb_credentials_id=$ssh_credentials_id
 jtb-preset     gh-juc               jtb_name=jnk/juc jtb_restrict_node=debian jtb_credentials_id=$ssh_credentials_id 
-
-jtb-preset     jjb-install-local    jtb_name=jnk/jtb/jtb-install-local jtb_restrict_node=master jtb_disabled=true jtb_credentials_id=$ssh_credentials_id 
+#jtb-preset     jjb-install-local    jtb_name=jnk/jtb/jtb-install-local jtb_restrict_node=master jtb_disabled=true jtb_credentials_id=$ssh_credentials_id 
 
 #jtb-gh-travis  bats-gh-travis       jtb_name=bats jtb_title="Bats (Travis build)" jtb_vendor_path="sstephenson/bats"
 #jtb-gh-travis  bats-mpe-gh-travis   jtb_name=bats jtb_title="Bats .mpe (Travis build)" jtb_vendor_path="dotmpe/bats"
