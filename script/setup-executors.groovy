@@ -7,9 +7,7 @@ int executors;
 
 try {
   executors = System.getenv("JENKINS_EXECUTORS").toInteger()
-} catch (e) {}
-
-if (executors == null) {
+} catch (e) {
   executors = 1
 }
 
