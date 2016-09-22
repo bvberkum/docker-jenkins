@@ -48,6 +48,7 @@ test -n "$image_type" || image_type=$(echo $dckrfile_dir | tr '/' '-')
 test -n "$shostname" || shostname=$image_type
 test -n "$image_ref" || image_ref=$vendor/$image_type:$tag
 test -n "$env_vars_file" || env_vars_file=.$image_type-env-$env.sh
+test -n "$jjb_config" || jjb_config=.jenkins-jobs-${env}.ini
 test -n "$env" || error "No env given" 1
 test -n "$tag" || error "No tag given" 1
 

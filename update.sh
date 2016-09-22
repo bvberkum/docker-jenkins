@@ -188,7 +188,6 @@ case "$image_type" in
 
         # jenkins:jenkins config gets created during build.
         # Get existing JJB config from container, replacing URL with external
-        jjb_config=.jenkins-jobs-${env}.ini
         docker cp $cname:/etc/jenkins_jobs/jenkins_jobs.ini $jjb_config.tmp
         cat $jjb_config.tmp | grep -v '^url=' > $jjb_config
         echo "url=$JENKINS_URL" >> $jjb_config

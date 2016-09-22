@@ -47,6 +47,7 @@ store_env()
     echo chome=$chome
     echo env=$1
     echo tag=$tag
+    echo jjb_config=$jjb_config
   } > .env-api-$1.sh
 }
 
