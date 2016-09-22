@@ -81,6 +81,7 @@ parameterized-trigger
 pipeline-build-step
 pipeline-graph-analysis
 pipeline-input-step
+pipeline-milestone-step
 pipeline-rest-api
 pipeline-stage-step
 pipeline-stage-view
