@@ -91,7 +91,7 @@ preconfig()
         test -n "$Run_Import_Home_Volume" && {
 
           err "TODO" 1
-          # TODO: restore volume from folder
+          # TODO: restore volume from folder/tar
 
         } || {
 
