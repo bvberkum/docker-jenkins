@@ -362,7 +362,7 @@ trueish "$Build_Export_Ports" && {
 #dckr_build_f="$dckr_build_f --build-arg build_tag=$tag --build-arg build_meta=$env"
 test ! -e $env_vars_file || {
   build_args=$(cat $env_vars_file | grep -v '^#' | \
-      sed 's/.*/--build-arg\ &/g')
+      sed 's/.*/--build-arg="&"/g' | tr '\n' ' ')
 }
 
 test ! -e env.sh \

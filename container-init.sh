@@ -20,7 +20,8 @@ test -e "/srv/project-local" && {
 try_install_jjb()
 {
   test -n "$JJB_SRC_DIR" || JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
-  install_jjb "$@"
+  test -n "$JJB_BRANCH" || JJB_BRANCH=master
+  install_jjb
 }
 
 jjb_home()
@@ -42,10 +43,10 @@ install_jjb()
 
   info "Installing JJB.."
   cd $JJB_SRC_DIR
-  test -z "$1" || {
-    git checkout $1 || error "Cannot checkout $1" 1
+  test -z "$JJB_BRANCH" || {
+    git checkout $JJB_BRANCH && log "Checked out JJB_BRANCH=$JJB_BRANCH" || error "Cannot checkout $1" 1
   }
-  git pull
+  git pull origin $JJB_BRANCH || error "Pull failed, ignored"
 
   pip install -r requirements.txt -e . \
     && info "JJB install complete" \
@@ -369,9 +370,6 @@ set_default_view()
       's#</hudson>#<primaryView>'"$1"'</primaryView></hudson>#g' \
       $HOME/config.xml
   }
-  sleep 2
-  jenkins-cli safe-restart &
-  return 0
 }
 
 add_user_public_key()

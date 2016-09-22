@@ -79,7 +79,8 @@ RUN \
       && chgrp jenkins /srv
 
 
-RUN pip uninstall -y six
+# For Jenkins Job Builder 1.6.2
+RUN pip install --upgrade six==1.9.0
 
 
 # Install other utils as user
@@ -92,7 +93,7 @@ ENV SRC_PREFIX /src/
 # Install JJB
 ARG JJB_BRANCH=master
 ARG JJB_SRC_DIR=$SRC_PREFIX/jenkins-job-builder
-RUN \
+RUN JJB_SRC_DIR=$JJB_SRC_DIR JJB_BRANCH=$JJB_BRANCH\
   /opt/dotmpe/docker-jenkins/init.sh try_install_jjb && \
   chown jenkins:staff -R $JJB_SRC_DIR
 

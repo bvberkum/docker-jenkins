@@ -31,7 +31,7 @@ case "$image_type" in
         info "Customizing..."
         docker exec -ti $cname \
             /opt/dotmpe/docker-jenkins/init.sh customize \
-	    || error "Container `init.sh customize` failed" $?
+        || error "Container `init.sh customize` failed" $?
       }
 
 
@@ -79,7 +79,7 @@ case "$image_type" in
         cld_json=clouds-$env.json
 
         sed 's/\-dev\.ssh\>/-'$env'.ssh/g' clouds.json \
-	  | sed 's/\<localhost\>/'"$DCKR_HOST"'/g' > $cld_json
+      | sed 's/\<localhost\>/'"$DCKR_HOST"'/g' > $cld_json
 
         # FIXME: update JSON with arrays
         #{
@@ -137,9 +137,13 @@ case "$image_type" in
 
       test -z "$Jenkins_Default_View" || {
         docker exec -ti -u jenkins $cname /opt/dotmpe/docker-jenkins/init.sh \
-          set_default_view $Jenkins_Default_View && \
-	     stderr ok "Default view set to '$Jenkins_Default_View'" \
-	     || err "Default view set failed"
+          set_default_view $Jenkins_Default_View \
+            && stderr ok "Default view set to '$Jenkins_Default_View'" \
+            || err "Default view set failed"
+
+        # XXX: Setting is applied, but only effective after restart
+        #sleep 2
+        #./jenkins-cli.sh $env $tag save-restart
       }
 
 
