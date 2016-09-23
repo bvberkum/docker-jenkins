@@ -10,5 +10,7 @@ jtb-base-0
 docker-jenkins-dry-run-pipeline
 #docker-jenkins-pipeline    Build_Tag=2.0 Build_Env=auto Rebuild=1
 
+#jnk/juc-gh-travis          
+
 # Simple table with projects/parameters to trigger after update.sh
 # vim:ft=sh:

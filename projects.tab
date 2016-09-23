@@ -10,7 +10,7 @@ cb-folder                           NAME=personal DISPLAY_NAME=Personal
 #jtb-preset     jtb-presets          jtb_name=jnk/jtb/jtb-presets jtb_disabled=false jtb_restrict_node=master jtb_branch=dev
 #jtb-preset     gh-user-conf         jtb_name=jnk/user-conf jtb_restrict_node=master jtb_branch=dev jtb_disabled=false jtb_credentials_id=$ssh_credentials_id
 jtb-preset     user-conf-free-git   jtb_name=jnk/user-conf jtb_restrict_node=debian jtb_branch=dev jtb_disabled=false jtb_credentials_id=$ssh_credentials_id
-jtb-preset     gh-juc               jtb_name=jnk/juc jtb_restrict_node=debian jtb_credentials_id=$ssh_credentials_id 
+#jtb-preset     gh-juc               jtb_name=jnk/juc jtb_restrict_node=debian jtb_credentials_id=$ssh_credentials_id 
 #jtb-preset     jjb-install-local    jtb_name=jnk/jtb/jtb-install-local jtb_restrict_node=master jtb_disabled=true jtb_credentials_id=$ssh_credentials_id 
 
 #jtb-gh-travis  bats-gh-travis       jtb_name=bats jtb_title="Bats (Travis build)" jtb_vendor_path="sstephenson/bats"
@@ -19,8 +19,6 @@ jtb-preset     gh-juc               jtb_name=jnk/juc jtb_restrict_node=debian jt
 #jtb-travis   /srv/project-mpe/git-versioning/.travis.yml
 #/srv/project-mpe/bats/.travis.yml
 
-# XXX: Travis job not working
-jtb            /srv/project-mpe/jenkins-userContent/.jtb.yml
 jjb            /srv/project-mpe/jenkins-userContent/jenkins-ci.yaml
 
 # TYPE         ARGS
@@ -31,7 +29,7 @@ jtb            jtb-simple.yaml
 
 # Standard JJB jobs from Docker-Jenkins jobs (in local project)
 jjb            .jjb.yml
-jjb            .jjb-pipeline-build-step.yml
+#jjb            .jjb-pipeline-build-step.yml
 jjb            .jjb-docker-dry-run.yml            
 
 # Templated or vanilla JJB jobs from other projects
