@@ -64,11 +64,11 @@ preconfig()
 
         trueish "$Run_Reset_Volume" && {
           trueish "$Run_Home_Container" && {
-            docker volume rm jenkins-$env-home || noop
-            docker volume create --name jenkins-$env-home
-            note "Recreated jenkins-$env-home volume"
+            docker volume rm $data_container_name || noop
+            docker volume create --name $data_container_name
+            note "Recreated $data_container_name volume"
           } || {
-            note "Need sudo to truncate volume"
+            note "Need sudo to truncate volume, g0t r00t?"
             sudo rm -rf $jenkins_home
             note "Truncated jenkins_home volume ($jenkins_home)"
           }
@@ -79,34 +79,43 @@ preconfig()
           || mkdir -vp $jenkins_home
 
 
-        # Preconfigure jenkins home folder using temporary container
+        trueish "$Run_Reset_Volume" && {
 
-        docker run -dt \
-          -v jenkins-$env-home:$jenkins_home \
-          --name jnk-vol-$env-tmp \
-          --entrypoint "cat" ubuntu \
-            || error "Failed starting jnk-vol-$env-tmp" 1
+          # Preconfigure jenkins home folder using temporary container
+
+          docker run -dt \
+            -v $data_container_name:$chome \
+            --name jnk-vol-$env-tmp \
+            --entrypoint "cat" ubuntu \
+              || error "Failed starting jnk-vol-$env-tmp" 1
 
 
-        test -n "$Run_Import_Home_Volume" && {
+          test -n "$Run_Import_Home_Volume" && {
 
-          err "TODO" 1
-          # TODO: restore volume from folder/tar
+            # Import from tar
 
-        } || {
+            basename=$(basename $Run_Import_Home_Volume)
 
-          trueish "$Run_Copy_Home_Volume" && {
+            docker run --rm \
+              -v $data_container_name:$chome \
+              -v $(pwd)/$Run_Import_Home_Volume:/tmp/$basename \
+              busybox tar x \
+                -f /tmp/$basename $chome \
+                  && note "Imported jenkins-home folder from $basename" \
+                  || error "Import jenkins-home error: $?" $?
 
-            err "TODO" 1
-            # TODO: restore volume from other volume
-
-            #test -z "$Run_Copy_Home_Volume" || {
-            #  docker run --rm --volumes-from $Run_Copy_Home_Volume \
-            #    -v busybox tar cvf /src_home $chome
-            #}
           } || {
 
-            trueish "$Run_Reset_Volume" && {
+            test -n "$Run_Copy_Home_Volume" && {
+
+              # Import from another volume?
+              error "FIXME: cannot mount directly, mount paths would be identical" 1
+              # export first, then import
+              #docker run --rm \
+              #  -v $Run_Copy_Home_Volume:/ \
+              #  busybox rsync -avzui /rc_home $chome
+
+            } || {
 
               note "Pre-configuring standard customizations"
 
