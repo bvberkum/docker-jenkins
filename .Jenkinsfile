@@ -65,8 +65,15 @@ node("dind || docker-host") {
   }
 
   if (Build_Env == 'dev') {
-    echo "Development build: starting server for evaluation"
-    sh "vendor=bvberkum ./run.sh ${Build_Env} ${Build_Tag}"
+    echo "Development build: starting server with production data for evaluation"
+    sh """#!/bin/bash
+
+    # export prod
+    ./jenkins-user-script.sh /var/jenkins_home $hostname-$shostname"
+
+    # run with import of duplicated prod data
+    Run_Import_Home_Volume=build/export.tar vendor=bvberkum ./run.sh ${Build_Env} ${Build_Tag}
+    """
   }
 
   if (Build_Env == 'acc') {

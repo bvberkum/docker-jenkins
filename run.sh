@@ -62,6 +62,8 @@ preconfig()
 
     jenkins-server* )
 
+        docker rm -f jnk-vol-$env-tmp || info "Ignored non-existing container"
+
         trueish "$Run_Reset_Volume" && {
           trueish "$Run_Home_Container" && {
             docker volume rm $data_container_name || noop
@@ -83,8 +85,14 @@ preconfig()
 
           # Preconfigure jenkins home folder using temporary container
 
+          local tmp_vol_run_f=    
+      trueish "$Run_Home_Container" \
+            || tmp_vol_run_f="-v $jenkins_home:$chome"
+        
+
+          note "Creating temporary provisioning container"
           docker run -dt \
-            -v $data_container_name:$chome \
+            -v $data_container_name:$chome $tmp_vol_run_f \
             --name jnk-vol-$env-tmp \
             --entrypoint "cat" ubuntu \
               || error "Failed starting jnk-vol-$env-tmp" 1
@@ -100,7 +108,7 @@ preconfig()
               -v $data_container_name:$chome \
               -v $(pwd)/$Run_Import_Home_Volume:/tmp/$basename \
               busybox tar x \
-                -f /tmp/$basename $chome \
+                -f /tmp/$basename -C $chome \
                   && note "Imported jenkins-home folder from $basename" \
                   || error "Import jenkins-home error: $?" $?
 
@@ -119,9 +127,9 @@ preconfig()
 
               note "Pre-configuring standard customizations"
 
-              docker exec jnk-vol-$env-tmp mkdir -vp $jenkins_home/.ssh $jenkins_home/init.groovy.d/
+              docker exec jnk-vol-$env-tmp mkdir -vp $chome/.ssh $chome/init.groovy.d/
 
-              docker cp script/setup-executors.groovy jnk-vol-$env-tmp:$jenkins_home/init.groovy.d/setup-executors.groovy
+              docker cp script/setup-executors.groovy jnk-vol-$env-tmp:$chome/init.groovy.d/setup-executors.groovy
 
               {
                 echo "// Parameters for init.groovy.d/setup-user-security.groovy"
@@ -130,19 +138,19 @@ preconfig()
                 echo Build_Admin_Public_Key="'$(cat $DCKR_VOL/ssh/id_?sa.pub)'"
               } > setup-user-security.init
 
-              docker cp setup-user-security.init jnk-vol-$env-tmp:$jenkins_home/init.groovy.d/setup-user-security.init
-              docker cp script/setup-user-security.groovy jnk-vol-$env-tmp:$jenkins_home/init.groovy.d/setup-user-security.groovy
+              docker cp setup-user-security.init jnk-vol-$env-tmp:$chome/init.groovy.d/setup-user-security.init
+              docker cp script/setup-user-security.groovy jnk-vol-$env-tmp:$chome/init.groovy.d/setup-user-security.groovy
               rm setup-user-security.init
 
-              docker cp custom/ jnk-vol-$env-tmp:$jenkins_home/custom
+              docker cp custom/ jnk-vol-$env-tmp:$chome/custom
 
               docker cp custom/org.codefirst.SimpleThemeDecorator.xml \
-                jnk-vol-$env-tmp:$jenkins_home/org.codefirst.SimpleThemeDecorator.xml
+                jnk-vol-$env-tmp:$chome/org.codefirst.SimpleThemeDecorator.xml
             }
           }
         }
 
-        docker exec -ti jnk-vol-$env-tmp chown -R 1000:1000 $jenkins_home/
+        docker exec -ti jnk-vol-$env-tmp chown -R 1000:1000 $chome/
 
         docker rm -f jnk-vol-$env-tmp
 
@@ -159,5 +167,6 @@ note "Starting new container"
 preconfig
 dckr_run
 
+note "Started container $cid $cname"
 export cid=$cid
 

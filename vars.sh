@@ -292,7 +292,7 @@ case "$image_type" in
 
       # Run from container or local mount volume
       trueish "$Run_Home_Container" && {
-        dckr_run_f="$dckr_run_f -v jenkins-$env-home:$chome:rw"
+        dckr_run_f="$dckr_run_f -v $data_container_name:$chome:rw"
       } || {
         dckr_run_f="$dckr_run_f -v $jenkins_home:$chome:rw"
       }
