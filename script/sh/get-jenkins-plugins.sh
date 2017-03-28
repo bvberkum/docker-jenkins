@@ -159,3 +159,5 @@ test "$(basename $0 .sh)" = "get-jenkins-plugins" -a -n "$1" && {
   "$@"
 
 } || printf ""
+
+# Id: docker-jenkins/0.0.5-dev script/sh/get-jenkins-plugins.sh

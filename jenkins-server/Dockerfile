@@ -1,5 +1,6 @@
 
-# Id: docker-jenkins/0.0.5-dev
+# Id: docker-jenkins/0.0.5-dev jenkins-server/Dockerfile
+
 
 FROM jenkins:2.0
 

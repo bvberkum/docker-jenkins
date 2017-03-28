@@ -12,3 +12,12 @@ install-dependencies.sh
 jenkins-server/Dockerfile
 jenkins-slave/evarga/Dockerfile
 jenkins-slave/evarga/dind/Dockerfile
+script/sh/get-jenkins-plugins.sh
+script/sh/create-item-cb-folder.sh
+script/sh/create-jenkins-nodes.sh
+script/sh/create-jenkins-jobs.sh
+script/sh/create-jenkins-view.sh
+script/sh/create-jenkins-ssh-host-credentials.sh
+script/sh/set-markup-formatter.sh
+script/set-markup-security.groovy
+script/set-global-env.groovy

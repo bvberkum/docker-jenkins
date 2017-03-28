@@ -51,3 +51,4 @@ curl -fsS -o /dev/null \
       }
 }
 
+# Id: docker-jenkins/0.0.5-dev script/sh/create-jenkins-ssh-host-credentials.sh

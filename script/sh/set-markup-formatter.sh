@@ -3,8 +3,9 @@
 set -e
 
 
-# FIXME: in 2.0 the default sec-conf form values changed (to have
+# NOTE: in 2.0 the default sec-conf form values changed (to have
 # security enabled by default). And this curl update no longer works
+# See set-markup-security.groovy instead
 
 scriptname=$(basename $0)
 c=0
@@ -25,3 +26,4 @@ curl -sf -X post -L -D - \
       || err "cURL returned error $?" $?
 
 
+# Id: docker-jenkins/0.0.5-dev script/sh/set-markup-formatter.sh

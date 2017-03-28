@@ -48,3 +48,4 @@ curl -fs -o /dev/null \
 
 rm config.xml
 
+# Id: docker-jenkins/0.0.5-dev script/sh/create-jenkins-view.sh

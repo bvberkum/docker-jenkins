@@ -268,7 +268,7 @@ customize()
       cp $x war/images/
       info "Customized war/images/$(basename $x)"
     } || {
-      warn "$x" 
+      warn "$x"
     }
   done
 }

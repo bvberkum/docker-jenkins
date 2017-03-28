@@ -1,26 +1,28 @@
-#!/bin/sh
+#1/bin/sh
 
-test -n "$scriptname" || scriptname=jenkins-cli
-
-jenkins_cli()
-{
-  echo "[$cname] Jenkins-CLI $* shift"
-
-  local c=0
-  . ./vars.sh "$@" 1>&2
-  # XXX: not needed (Linux)
-  #case "$(uname)" in
-  #  Darwin )
-  #      shift 2
-  #    ;;
-  #esac
-  #echo "[$cname] Jenkins-CLI $* shift $c"
-  #test $c -eq 0 || shift $c
-  
-  stderr info "[$cname] Jenkins-CLI $*"
-  docker exec -ti $cname \
-    /usr/local/bin/jenkins-cli "$@" || exit $?
+. std.lib.sh
+test -n "$1" || error "hostname argument expected" 1
+url=$1
+test -e jenkins-cli.jar || {
+  test -z "$2" || error "surplus arguments '$2'" 1
+  wget http://$1/jnlpJars/jenkins-cli.jar
+  exit 1
 }
 
-jenkins_cli "$@"
+shift
+
+test -e .ssh_id_rsa && {
+  pk=.ssh_id_rsa
+} || {
+  pk=$(echo $HOME/.ssh/id_?sa | cut -f 1 -d " ")
+}
+
+test -n "$pk" -a -e "$pk" || {
+
+  echo "No keyfile for CLI: $pk"; exit 1;
+}
+
+jar_f="-s http://$url -i $pk"
+java -jar ./jenkins-cli.jar $jar_f "$@" \
+  || exit $?
 

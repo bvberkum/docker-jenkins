@@ -21,7 +21,6 @@ claim
 cli-commander
 cloudbees-folder
 conditional-buildstep
-config-file-provider
 console-column-plugin
 copyartifact
 copy-to-slave
@@ -51,10 +50,8 @@ git-server
 global-build-stats
 groovy
 handlebars
-hidden-parameter
 icon-shim
 instant-messaging
-ivy
 jabber
 javadoc
 jenkins-multijob-plugin
@@ -81,7 +78,6 @@ parameterized-trigger
 pipeline-build-step
 pipeline-graph-analysis
 pipeline-input-step
-pipeline-milestone-step
 pipeline-rest-api
 pipeline-stage-step
 pipeline-stage-view

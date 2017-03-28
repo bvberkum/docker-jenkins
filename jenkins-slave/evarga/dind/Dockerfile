@@ -36,4 +36,4 @@ USER jenkins
 USER root
 
 
-# Id: docker-jenkins/0.0.5-dev
+# Id: docker-jenkins/0.0.5-dev jenkins-slave/evarga/dind/Dockerfile

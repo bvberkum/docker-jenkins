@@ -15,3 +15,4 @@ if (formatter in EscapedMarkupFormatter) {
   instance.save()
 }
 
+// Id: docker-jenkins/0.0.5-dev script/set-markup-security.groovy

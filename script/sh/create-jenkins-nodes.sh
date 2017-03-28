@@ -34,6 +34,7 @@ generate_node()
     || continue
 }
 
+# XXX: some dynamic vars are required making this useless. See update.sh.
 update_nodes_from_table()
 {
   test -n "$1" || err "triggers tab file expected" 1
@@ -64,3 +65,4 @@ update_nodes_from_table()
   done
 }
 
+# Id: docker-jenkins/0.0.5-dev script/sh/create-jenkins-nodes.sh
