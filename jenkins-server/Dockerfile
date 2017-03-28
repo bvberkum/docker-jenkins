@@ -50,6 +50,8 @@ USER jenkins
 # Install plugins
 COPY plugins.txt /plugins.txt
 RUN /usr/local/bin/plugins.sh /plugins.txt
+# Deprecated, also no long need to resolve deps
+#RUN /usr/local/bin/install-plugins.sh name
 
 USER root
 
@@ -78,10 +80,6 @@ RUN \
       && chown jenkins:jenkins /srv/project-local \
       && chmod g+rw /srv \ 
       && chgrp jenkins /srv
-
-
-# For Jenkins Job Builder 1.6.2
-RUN pip install --upgrade six==1.9.0
 
 
 # Install other utils as user

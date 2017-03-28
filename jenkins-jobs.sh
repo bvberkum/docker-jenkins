@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 test -n "$scriptname" || scriptname=jenkins-jobs
 
 . ./vars.sh "$@"

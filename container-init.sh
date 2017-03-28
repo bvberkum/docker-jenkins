@@ -6,6 +6,8 @@
 
 # Id: docker-jenkins/0.0.5-dev container-init.sh
 
+set -e
+
 test -n "$hostname" || hostname=$(hostname)
 
 . $(dirname $0)/util.sh
