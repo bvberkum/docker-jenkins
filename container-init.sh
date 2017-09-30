@@ -36,7 +36,7 @@ install_jjb()
   test -e "$JJB_SRC_DIR" || {
     mkdir -vp $(dirname $JJB_SRC_DIR) || error "Failed to created basedir for $JJB_SRC_DIR" 1
 
-    git clone https://github.com/dotmpe/jenkins-job-builder.git $JJB_SRC_DIR \
+    git clone https://github.com/bvberkum/jenkins-job-builder.git $JJB_SRC_DIR \
       || error "Error cloning to $JJB_SRC_DIR" 1
   }
 
@@ -79,7 +79,7 @@ install_jtb()
   test -e "$JTB_SRC_DIR" || {
     mkdir -vp $(dirname $JTB_SRC_DIR) \
       || error "Failed to created basedir for $JTB_SRC_DIR" 1
-    git clone https://github.com/dotmpe/jenkins-templated-builds.git $JTB_SRC_DIR
+    git clone https://github.com/bvberkum/jenkins-templated-builds.git $JTB_SRC_DIR
   }
 
   cd $JTB_SRC_DIR
@@ -194,7 +194,7 @@ install_juc()
   test -n "$JNK_UC_SRC" || return 1
   test -e "$JNK_UC_SRC" || {
     mkdir -vp $(dirname $JNK_UC_SRC) || error "Failed to created basedir for $JNK_UC_SRC" 1
-    git clone https://github.com/dotmpe/jenkins-userContent.git $JNK_UC_SRC
+    git clone https://github.com/bvberkum/jenkins-userContent.git $JNK_UC_SRC
   }
 }
 

@@ -24,7 +24,7 @@ case "$act" in
     image_ref=jenkins:$tag
     docker run $dckr_run_f \
       -m 768M --cpuset-cpus=0 \
-      --env JAVA_OPTS="-Dhudson.footerURL=http://github.com/dotmpe/docker-jenkins" \
+      --env JAVA_OPTS="-Dhudson.footerURL=http://github.com/bvberkum/docker-jenkins" \
       -p 8001:8080 \
       -v /etc/localtime:/etc/localtime:ro \
       --hostname $chostname \

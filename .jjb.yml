@@ -70,7 +70,7 @@
 
       scm:
       - git:
-          url: https://github.com/dotmpe/docker-jenkins.git
+          url: https://github.com/bvberkum/docker-jenkins.git
           branches:
           - origin/dev
           local-branch: dev

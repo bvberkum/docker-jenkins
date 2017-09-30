@@ -126,7 +126,7 @@ COPY script/setup-user-security.groovy /usr/share/jenkins/ref/init.groovy.d/
 # or docker run $jenkins_container --help
 
 # Link target for "Jenkins ver 1.xxx.x" footer text
-ARG company_url=http://github.com/dotmpe/docker-jenkins
+ARG company_url=http://github.com/bvberkum/docker-jenkins
 ARG jenkins_install_wizard=false
 ENV JAVA_OPTS -Dhudson.footerURL=$company_url \
               -Djenkins.install.runSetupWizard=$jenkins_install_wizard

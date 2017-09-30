@@ -40,7 +40,7 @@ test -d $PREFIX || ${sudo} mkdir -vp $PREFIX
 
 install_git_versioning()
 {
-  git clone https://github.com/dotmpe/git-versioning.git $SRC_PREFIX/git-versioning
+  git clone https://github.com/bvberkum/git-versioning.git $SRC_PREFIX/git-versioning
   ( cd $SRC_PREFIX/git-versioning && ./configure.sh $PREFIX && ENV=production ./install.sh )
 }
 
